@@ -34,6 +34,7 @@ Deno.serve(async (req) => {
   const { data: subs } = await supabase.from('push_subscriptions').select('*').in('user_id', userIds)
 
   let sent = 0
+  const failed: { status?: number; body?: string }[] = []
   for (const appt of due) {
     const payload = JSON.stringify({
       title: `⏰ ${appt.client_name} às ${appt.starts_at}`,
@@ -51,14 +52,16 @@ Deno.serve(async (req) => {
         sent++
       } catch (err) {
         // 404/410: inscrição expirada (app removido ou permissão revogada).
-        const status = (err as { statusCode?: number }).statusCode
+        const { statusCode: status, body } = err as { statusCode?: number; body?: string }
+        failed.push({ status, body: body ?? String(err) })
         if (status === 404 || status === 410) {
           await supabase.from('push_subscriptions').delete().eq('id', sub.id)
         } else {
-          console.error('push failed', status, err)
+          console.error('push failed', status, body ?? err)
         }
       }
     }
   }
-  return json({ due: due.length, sent })
+  // A resposta fica salva em net._http_response (útil para diagnosticar).
+  return json({ due: due.length, subscriptions: subs?.length ?? 0, sent, failed })
 })

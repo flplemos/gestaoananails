@@ -99,7 +99,7 @@ export function Sheet({ open, title, onClose, children, footer }) {
 
 export function Field({ label, children, hint }) {
   return (
-    <label className="block">
+    <label className="block min-w-0">
       <span className="mb-1.5 block text-sm font-bold text-ink">{label}</span>
       {children}
       {hint && <span className="mt-1 block text-xs text-muted">{hint}</span>}
