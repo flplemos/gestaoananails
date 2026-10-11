@@ -1,7 +1,8 @@
 // Edge Function: envia os lembretes push 5h e 3h antes de cada atendimento.
 // Chamada a cada 5 min pelo pg_cron (ver supabase/cron.sql).
 // Secrets necessários: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, CRON_SECRET.
-// SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já são injetados pelo Supabase.
+// SB_SECRET_KEY: chave secreta (sb_secret_…) criada em Project Settings > API Keys.
+// SUPABASE_URL já é injetado pelo Supabase.
 import webpush from 'npm:web-push@3.6.7'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
@@ -29,10 +30,12 @@ Deno.serve(async (req) => {
     Deno.env.get('VAPID_PUBLIC_KEY')!,
     Deno.env.get('VAPID_PRIVATE_KEY')!,
   )
-  // Projetos novos expõem as chaves novas (sb_secret_…) em SUPABASE_SECRET_KEYS.
+  // Prioridade: chave secreta nova cadastrada em Secrets (SB_SECRET_KEY);
+  // a service_role legada fica só como último recurso.
   const serviceKey =
-    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ??
-    JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}').default
+    Deno.env.get('SB_SECRET_KEY') ??
+    JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}').default ??
+    Deno.env.get('SUPABASE_SERVICE_ROLE_KEY')
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
 
   const { data: due, error } = await supabase.rpc('claim_due_reminders', { offsets: OFFSETS })
