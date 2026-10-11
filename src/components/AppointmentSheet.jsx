@@ -2,7 +2,7 @@ import { Check, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useData } from '../context/DataContext'
 import { formatBRL } from '../lib/format'
-import { Button, Field, Sheet, inputClass } from './ui'
+import { Button, Field, Segmented, Sheet, inputClass } from './ui'
 
 const nowTime = () => {
   const d = new Date()
@@ -196,18 +196,19 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
               onChange={(e) => set({ total: e.target.value })}
             />
           </Field>
-          <Field label="Status">
-            <button
-              type="button"
-              onClick={() => set({ done: !form.done })}
-              className={`${inputClass} flex items-center justify-between font-bold ${form.done ? 'text-primary' : 'text-muted'}`}
-            >
-              {form.done ? 'Concluído' : 'Agendado'}
-              <span className={`grid size-5 place-items-center rounded-full ${form.done ? 'bg-primary text-on-primary' : 'border-2 border-line'}`}>
-                {form.done && <Check size={12} strokeWidth={3} />}
-              </span>
-            </button>
-          </Field>
+          {/* Fora de <label>: um toque no título não pode alternar o status. */}
+          <div className="min-w-0">
+            <span className="mb-1.5 block text-sm font-bold">Status</span>
+            <Segmented
+              value={form.done ? 'done' : 'scheduled'}
+              onChange={(v) => set({ done: v === 'done' })}
+              options={[
+                { value: 'scheduled', label: 'Agendado' },
+                { value: 'done', label: 'Feito' },
+              ]}
+            />
+            <span className="mt-1 block text-xs text-muted">Lembrete só para agendados</span>
+          </div>
         </div>
       </div>
     </Sheet>

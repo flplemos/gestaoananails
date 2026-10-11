@@ -15,6 +15,11 @@ export default function Hoje() {
   const expected = dayList.reduce((s, a) => s + Number(a.total), 0)
   const doneCount = dayList.filter((a) => a.done).length
 
+  const toggleDone = (a) => {
+    if (a.done && !confirm(`Voltar o atendimento de ${a.clientName} para "agendado"?`)) return
+    update('appointments', a.id, { done: !a.done })
+  }
+
   return (
     <>
       <PageHeader title="Olá, Ana ✨" subtitle={formatLongDate(date)} />
@@ -72,15 +77,21 @@ export default function Hoje() {
                       </p>
                     </div>
                   </button>
+                  {/* Rótulo explícito: o círculo sozinho não deixava claro que significava "concluído". */}
                   <button
                     type="button"
-                    onClick={() => update('appointments', a.id, { done: !a.done })}
-                    aria-label={a.done ? 'Marcar como agendado' : 'Marcar como concluído'}
-                    className={`grid size-10 shrink-0 place-items-center rounded-full border-2 transition active:scale-90 ${
-                      a.done ? 'border-primary bg-primary text-on-primary' : 'border-line text-transparent'
+                    onClick={() => toggleDone(a)}
+                    className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-2 font-display text-xs font-semibold transition active:scale-95 ${
+                      a.done ? 'bg-primary text-on-primary' : 'border-2 border-primary/60 text-primary'
                     }`}
                   >
-                    <Check size={18} strokeWidth={3} />
+                    {a.done ? (
+                      <>
+                        <Check size={14} strokeWidth={3} /> Feito
+                      </>
+                    ) : (
+                      'Concluir'
+                    )}
                   </button>
                 </Card>
               </li>
