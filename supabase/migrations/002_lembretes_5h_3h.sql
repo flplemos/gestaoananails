@@ -22,18 +22,13 @@ begin
 end $$;
 
 drop function if exists public.claim_due_reminders(int);
+drop function if exists public.claim_due_reminders(int[], int, int);
 
 -- Marca e devolve os lembretes que venceram (horário de Natal/RN).
 -- • offsets: minutos antes do atendimento (padrão 5h e 3h).
--- • Se mais de um venceu ao mesmo tempo (agendado em cima da hora ou
---   adiado pelo silêncio noturno), sai uma única notificação.
--- • Silêncio das 22:00 às 07:00: nada é enviado; o que vencer nesse
---   período sai às 07:00.
-create or replace function public.claim_due_reminders(
-  offsets     int[] default '{300,180}',
-  quiet_start int   default 22,
-  quiet_end   int   default 7
-)
+-- • Se mais de um venceu ao mesmo tempo (atendimento agendado em cima
+--   da hora), sai uma única notificação.
+create or replace function public.claim_due_reminders(offsets int[] default '{300,180}')
 returns table (appointment_id uuid, user_id uuid, client_name text, starts_at text, services text, minutes_left int)
 language sql security definer set search_path = '' as $$
   with now_local as (
@@ -50,8 +45,6 @@ language sql security definer set search_path = '' as $$
      where not a.done
        and a.date between n.ts::date and n.ts::date + 1
        and (a.date + a.time) at time zone 'America/Fortaleza' > now()
-       and extract(hour from n.ts) >= quiet_end
-       and extract(hour from n.ts) < quiet_start
   )
   update public.appointments a
      set reminders_sent = a.reminders_sent || d.new_offsets
@@ -66,5 +59,5 @@ language sql security definer set search_path = '' as $$
             ceil(extract(epoch from ((a.date + a.time) at time zone 'America/Fortaleza') - now()) / 60)::int;
 $$;
 
-revoke execute on function public.claim_due_reminders(int[], int, int) from public, anon, authenticated;
-grant execute on function public.claim_due_reminders(int[], int, int) to service_role;
+revoke execute on function public.claim_due_reminders(int[]) from public, anon, authenticated;
+grant execute on function public.claim_due_reminders(int[]) to service_role;

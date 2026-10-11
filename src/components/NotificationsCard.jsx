@@ -54,7 +54,7 @@ export default function NotificationsCard() {
 
       {status === 'disabled' && (
         <>
-          <p className="text-sm text-muted">Receba avisos 5 horas e 3 horas antes de cada atendimento agendado (sem avisos entre 22h e 7h).</p>
+          <p className="text-sm text-muted">Receba avisos 5 horas e 3 horas antes de cada atendimento agendado.</p>
           <Button className="mt-3 w-full" disabled={busy} onClick={run(enablePush)}>
             <Bell size={18} /> Ativar lembretes
           </Button>
