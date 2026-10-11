@@ -1,0 +1,106 @@
+@import "tailwindcss";
+
+/*
+ * Tailwind v4: a configuração do tema fica aqui (substitui o tailwind.config.js).
+ * As cores da marca vêm do styles.css da landing (ananails.vercel.app) e são
+ * expostas como variáveis CSS, permitindo trocar o tema em tempo de execução.
+ */
+
+:root,
+[data-theme="ananails"] {
+  --bg: #fce4e0;
+  --surface: #ffffff;
+  --primary: #8b5a53;
+  --primary-light: #a9756d;
+  --on-primary: #ffffff;
+  --ink: #5b3a35;
+  --muted: #a08480;
+  --line: rgba(139, 90, 83, 0.2);
+  --soft: rgba(139, 90, 83, 0.08);
+}
+
+[data-theme="nude"] {
+  --bg: #f4ece4;
+  --surface: #ffffff;
+  --primary: #8f6e58;
+  --primary-light: #b39580;
+  --on-primary: #ffffff;
+  --ink: #4f3d31;
+  --muted: #a3907f;
+  --line: rgba(143, 110, 88, 0.2);
+  --soft: rgba(143, 110, 88, 0.08);
+}
+
+[data-theme="rose"] {
+  --bg: #fbe7ee;
+  --surface: #ffffff;
+  --primary: #a8566f;
+  --primary-light: #c77b93;
+  --on-primary: #ffffff;
+  --ink: #5c2f3d;
+  --muted: #b08997;
+  --line: rgba(168, 86, 111, 0.2);
+  --soft: rgba(168, 86, 111, 0.08);
+}
+
+[data-theme="noite"] {
+  --bg: #2a1e1c;
+  --surface: #3a2b28;
+  --primary: #e8b9b0;
+  --primary-light: #f3d2cb;
+  --on-primary: #3a2420;
+  --ink: #fce4e0;
+  --muted: #bfa29c;
+  --line: rgba(252, 228, 224, 0.15);
+  --soft: rgba(252, 228, 224, 0.06);
+}
+
+@theme inline {
+  --color-bg: var(--bg);
+  --color-surface: var(--surface);
+  --color-primary: var(--primary);
+  --color-primary-light: var(--primary-light);
+  --color-on-primary: var(--on-primary);
+  --color-ink: var(--ink);
+  --color-muted: var(--muted);
+  --color-line: var(--line);
+  --color-soft: var(--soft);
+}
+
+@theme {
+  --color-wpp: #25d366;
+  --color-wpp-hover: #20b858;
+  --font-sans: "Lato", sans-serif;
+  --font-display: "Montserrat", sans-serif;
+  --shadow-card: 0 10px 30px var(--soft);
+  --shadow-fab: 0 8px 20px rgba(139, 90, 83, 0.35);
+  --radius-card: 20px;
+  --animate-fade-up: fade-up 0.4s ease-out both;
+  --animate-sheet: sheet-up 0.28s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+
+  @keyframes fade-up {
+    from { opacity: 0; transform: translateY(12px); }
+    to { opacity: 1; transform: translateY(0); }
+  }
+  @keyframes sheet-up {
+    from { transform: translateY(100%); }
+    to { transform: translateY(0); }
+  }
+}
+
+@layer base {
+  html,
+  body {
+    background: var(--bg);
+    color: var(--ink);
+    -webkit-tap-highlight-color: transparent;
+  }
+  h1, h2, h3 {
+    font-family: var(--font-display);
+    font-weight: 600;
+  }
+  input, select, textarea, button {
+    font: inherit;
+    color: inherit;
+  }
+}
