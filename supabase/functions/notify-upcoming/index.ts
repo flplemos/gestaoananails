@@ -1,11 +1,20 @@
-// Edge Function: envia push para os atendimentos que começam em ~1 hora.
+// Edge Function: envia os lembretes push 5h e 3h antes de cada atendimento.
 // Chamada a cada 5 min pelo pg_cron (ver supabase/cron.sql).
 // Secrets necessários: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, CRON_SECRET.
 // SUPABASE_URL e SUPABASE_SERVICE_ROLE_KEY já são injetados pelo Supabase.
 import webpush from 'npm:web-push@3.6.7'
 import { createClient } from 'npm:@supabase/supabase-js@2'
 
-const MINUTES_AHEAD = 60
+// Minutos antes do atendimento em que cada lembrete é enviado.
+const OFFSETS = [300, 180]
+
+/** 185 -> "3h05", 120 -> "2h", 45 -> "45 min" */
+const formatLeft = (min: number) => {
+  if (min < 60) return `${min} min`
+  const h = Math.floor(min / 60)
+  const m = min % 60
+  return m ? `${h}h${String(m).padStart(2, '0')}` : `${h}h`
+}
 
 const json = (body: unknown, status = 200) =>
   new Response(JSON.stringify(body), { status, headers: { 'Content-Type': 'application/json' } })
@@ -26,7 +35,7 @@ Deno.serve(async (req) => {
     JSON.parse(Deno.env.get('SUPABASE_SECRET_KEYS') ?? '{}').default
   const supabase = createClient(Deno.env.get('SUPABASE_URL')!, serviceKey)
 
-  const { data: due, error } = await supabase.rpc('claim_due_reminders', { minutes_ahead: MINUTES_AHEAD })
+  const { data: due, error } = await supabase.rpc('claim_due_reminders', { offsets: OFFSETS })
   if (error) return json({ error: error.message }, 500)
   if (!due?.length) return json({ due: 0, sent: 0 })
 
@@ -38,9 +47,9 @@ Deno.serve(async (req) => {
   for (const appt of due) {
     const payload = JSON.stringify({
       title: `⏰ ${appt.client_name} às ${appt.starts_at}`,
-      body: appt.services ? `Daqui a pouco: ${appt.services}` : 'Atendimento daqui a pouco',
+      body: `Em ${formatLeft(appt.minutes_left)}${appt.services ? ` · ${appt.services}` : ''}`,
       url: '/',
-      tag: appt.appointment_id,
+      tag: `${appt.appointment_id}-${appt.minutes_left}`,
     })
     for (const sub of (subs ?? []).filter((s) => s.user_id === appt.user_id)) {
       try {

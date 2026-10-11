@@ -3,7 +3,7 @@ import { useEffect, useState } from 'react'
 import { disablePush, enablePush, getPushStatus, testNotification } from '../lib/push'
 import { Button, Card } from './ui'
 
-/** Ativa os lembretes push (1h antes de cada atendimento). */
+/** Ativa os lembretes push (5h e 3h antes de cada atendimento). */
 export default function NotificationsCard() {
   const [status, setStatus] = useState('checking')
   const [busy, setBusy] = useState(false)
@@ -54,7 +54,7 @@ export default function NotificationsCard() {
 
       {status === 'disabled' && (
         <>
-          <p className="text-sm text-muted">Receba um aviso cerca de 1 hora antes de cada atendimento agendado.</p>
+          <p className="text-sm text-muted">Receba avisos 5 horas e 3 horas antes de cada atendimento agendado (sem avisos entre 22h e 7h).</p>
           <Button className="mt-3 w-full" disabled={busy} onClick={run(enablePush)}>
             <Bell size={18} /> Ativar lembretes
           </Button>

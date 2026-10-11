@@ -69,7 +69,7 @@ export async function disablePush() {
 export async function testNotification() {
   const reg = await navigator.serviceWorker.ready
   await reg.showNotification('⏰ Teste da Ana Nails', {
-    body: 'Assim chegará o aviso 1 hora antes de cada atendimento.',
+    body: 'Assim chegarão os avisos 5h e 3h antes de cada atendimento.',
     icon: '/icon-192.png',
   })
 }

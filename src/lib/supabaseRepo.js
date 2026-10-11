@@ -10,7 +10,7 @@ import { supabase } from './supabase'
 const TO_DB = { clientId: 'client_id', clientName: 'client_name' }
 const FROM_DB = Object.fromEntries(Object.entries(TO_DB).map(([k, v]) => [v, k]))
 const NUMERIC = ['price', 'total', 'amount']
-const HIDDEN = ['user_id', 'created_at', 'notified_at']
+const HIDDEN = ['user_id', 'created_at', 'reminders_sent']
 
 const toRow = (values) => {
   const row = {}

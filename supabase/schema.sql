@@ -32,7 +32,7 @@ create table if not exists public.appointments (
   items       jsonb not null default '[]',   -- [{serviceId, name, price}] (cópia do catálogo no momento)
   total       numeric(10,2) not null default 0,
   done        boolean not null default false,
-  notified_at timestamptz,                   -- lembrete push já enviado
+  reminders_sent int[] not null default '{}', -- lembretes já enviados (minutos antes)
   created_at  timestamptz not null default now()
 );
 
@@ -55,7 +55,7 @@ create table if not exists public.push_subscriptions (
 );
 
 create index if not exists appointments_user_date_idx on public.appointments (user_id, date);
-create index if not exists appointments_pending_idx on public.appointments (date) where notified_at is null and not done;
+create index if not exists appointments_pending_idx on public.appointments (date) where not done;
 create index if not exists expenses_user_date_idx on public.expenses (user_id, date);
 create index if not exists clients_user_idx on public.clients (user_id);
 
@@ -72,13 +72,13 @@ begin
   end loop;
 end $$;
 
--- ---------- Lembretes ----------
--- Se a data/hora do atendimento mudar, o lembrete volta a ficar pendente.
+-- ---------- Lembretes (5h e 3h antes) ----------
+-- Se a data/hora mudar, os lembretes voltam a ficar pendentes.
 create or replace function public.reset_reminder()
 returns trigger language plpgsql set search_path = '' as $$
 begin
   if new.date is distinct from old.date or new.time is distinct from old.time then
-    new.notified_at := null;
+    new.reminders_sent := '{}';
   end if;
   return new;
 end $$;
@@ -88,23 +88,50 @@ create trigger appointments_reset_reminder
   before update on public.appointments
   for each row execute function public.reset_reminder();
 
--- Marca como avisados e devolve os atendimentos que começam nos próximos
--- `minutes_ahead` minutos (horário de Natal/RN). Usado pela Edge Function.
-create or replace function public.claim_due_reminders(minutes_ahead int default 60)
-returns table (appointment_id uuid, user_id uuid, client_name text, starts_at text, services text)
+drop function if exists public.claim_due_reminders(int);
+
+-- Marca e devolve os lembretes que venceram (horário de Natal/RN).
+-- • offsets: minutos antes do atendimento (padrão 5h e 3h).
+-- • Se mais de um venceu ao mesmo tempo (agendado em cima da hora ou
+--   adiado pelo silêncio noturno), sai uma única notificação.
+-- • Silêncio das 22:00 às 07:00: nada é enviado; o que vencer nesse
+--   período sai às 07:00.
+create or replace function public.claim_due_reminders(
+  offsets     int[] default '{300,180}',
+  quiet_start int   default 22,
+  quiet_end   int   default 7
+)
+returns table (appointment_id uuid, user_id uuid, client_name text, starts_at text, services text, minutes_left int)
 language sql security definer set search_path = '' as $$
+  with now_local as (
+    select now() at time zone 'America/Fortaleza' as ts
+  ),
+  due as (
+    select a.id,
+           array(
+             select o from unnest(offsets) o
+              where (a.date + a.time) at time zone 'America/Fortaleza' - make_interval(mins => o) <= now()
+                and not (o = any(a.reminders_sent))
+           ) as new_offsets
+      from public.appointments a, now_local n
+     where not a.done
+       and a.date between n.ts::date and n.ts::date + 1
+       and (a.date + a.time) at time zone 'America/Fortaleza' > now()
+       and extract(hour from n.ts) >= quiet_end
+       and extract(hour from n.ts) < quiet_start
+  )
   update public.appointments a
-     set notified_at = now()
-   where a.notified_at is null
-     and not a.done
-     and (a.date + a.time) at time zone 'America/Fortaleza'
-         between now() and now() + make_interval(mins => minutes_ahead)
+     set reminders_sent = a.reminders_sent || d.new_offsets
+    from due d
+   where a.id = d.id
+     and cardinality(d.new_offsets) > 0
   returning a.id,
             a.user_id,
             a.client_name,
             to_char(a.time, 'HH24:MI'),
-            (select string_agg(i->>'name', ' + ') from jsonb_array_elements(a.items) i);
+            (select string_agg(i->>'name', ' + ') from jsonb_array_elements(a.items) i),
+            ceil(extract(epoch from ((a.date + a.time) at time zone 'America/Fortaleza') - now()) / 60)::int;
 $$;
 
-revoke execute on function public.claim_due_reminders(int) from public, anon, authenticated;
-grant execute on function public.claim_due_reminders(int) to service_role;
+revoke execute on function public.claim_due_reminders(int[], int, int) from public, anon, authenticated;
+grant execute on function public.claim_due_reminders(int[], int, int) to service_role;
