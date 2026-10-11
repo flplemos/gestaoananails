@@ -4,6 +4,7 @@ import AppointmentSheet from '../components/AppointmentSheet'
 import { Avatar, Card, Fab, PageHeader, Segmented, Stepper } from '../components/ui'
 import { useData } from '../context/DataContext'
 import { addDays, formatBRL, formatDayLabel, formatLongDate, fromISODate, toISODate } from '../lib/format'
+import { endTime } from '../lib/schedule'
 
 const sum = (list) => list.reduce((s, a) => s + Number(a.total), 0)
 
@@ -181,6 +182,7 @@ function Empty({ text }) {
 }
 
 function AppointmentList({ list, onOpen, onToggle, showDate = false }) {
+  const { services } = useData()
   return (
     <ul className="space-y-3">
       {list.map((a, i) => (
@@ -193,7 +195,7 @@ function AppointmentList({ list, onOpen, onToggle, showDate = false }) {
                 <p className="truncate text-sm text-muted">{a.items.map((it) => it.name).join(' + ')}</p>
                 <p className="mt-0.5 flex items-center gap-1 text-xs font-bold text-primary-light">
                   <Clock size={12} /> {showDate && `${fromISODate(a.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} · `}
-                  {a.time} · {formatBRL(a.total)}
+                  {a.time}–{endTime(a, services)} · {formatBRL(a.total)}
                 </p>
               </div>
             </button>

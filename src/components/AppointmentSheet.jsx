@@ -1,7 +1,15 @@
-import { Check, Trash2 } from 'lucide-react'
+import { AlertTriangle, Check, Clock, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useData } from '../context/DataContext'
 import { formatBRL } from '../lib/format'
+import {
+  DEFAULT_DURATION,
+  appointmentDuration,
+  describeAppointment,
+  endTime,
+  findConflicts,
+  formatDuration,
+} from '../lib/schedule'
 import { Button, Field, Segmented, Sheet, inputClass } from './ui'
 
 const nowTime = () => {
@@ -25,7 +33,7 @@ const emptyForm = (date) => ({
  * da ficha da cliente, com os serviços da última visita).
  */
 export default function AppointmentSheet({ open, onClose, appointment, defaultDate, preset }) {
-  const { services, clients, create, update, remove } = useData()
+  const { services, clients, appointments, create, update, remove } = useData()
   // O componente é remontado (key) a cada abertura, então o estado inicial basta.
   const [form, setForm] = useState(() =>
     appointment ? { ...appointment, phone: '' } : { ...emptyForm(defaultDate), ...preset },
@@ -48,7 +56,15 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
       const has = f.items.some((i) => i.serviceId === svc.id)
       const items = has
         ? f.items.filter((i) => i.serviceId !== svc.id)
-        : [...f.items, { serviceId: svc.id, name: svc.name, price: Number(svc.price) }]
+        : [
+            ...f.items,
+            {
+              serviceId: svc.id,
+              name: svc.name,
+              price: Number(svc.price),
+              duration: Number(svc.duration) || DEFAULT_DURATION,
+            },
+          ]
       // Mudar a seleção recalcula o total a partir do catálogo.
       return { ...f, items, total: items.reduce((s, i) => s + i.price, 0) }
     })
@@ -56,8 +72,16 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
 
   const canSave = form.clientName.trim() && form.items.length > 0 && form.time && form.date
 
+  const candidate = { ...form, id: appointment?.id }
+  const duration = appointmentDuration(candidate, services)
+  const conflicts = form.items.length ? findConflicts(candidate, appointments, services) : []
+
   const handleSave = async () => {
     if (!canSave) return
+    if (conflicts.length) {
+      const list = conflicts.map((c) => `• ${describeAppointment(c, services)}`).join('\n')
+      if (!confirm(`Tem certeza? Esse horário cruza com:\n\n${list}\n\nAgendar mesmo assim?`)) return
+    }
     setSaving(true)
     try {
       let client = matchedClient
@@ -156,6 +180,28 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
           </Field>
         </div>
 
+        {form.items.length > 0 && form.time && (
+          <p className="-mt-1 flex items-center gap-1.5 px-1 text-sm text-muted">
+            <Clock size={14} className="text-primary" />
+            {form.time} – {endTime(candidate, services)}
+            <span className="text-xs">({formatDuration(duration)})</span>
+          </p>
+        )}
+
+        {conflicts.length > 0 && (
+          <div className="flex gap-2 rounded-2xl border border-amber-400/50 bg-amber-400/10 px-4 py-3 text-sm">
+            <AlertTriangle size={18} className="mt-0.5 shrink-0 text-amber-500" />
+            <div>
+              <p className="font-bold">Horário ocupado</p>
+              {conflicts.map((c) => (
+                <p key={c.id} className="text-muted">
+                  {describeAppointment(c, services)}
+                </p>
+              ))}
+            </div>
+          </div>
+        )}
+
         <div>
           <p className="mb-2 text-sm font-bold">Catálogo de serviços</p>
           <ul className="overflow-hidden rounded-card bg-surface shadow-card">
@@ -175,7 +221,10 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
                     >
                       {selected && <Check size={14} strokeWidth={3} />}
                     </span>
-                    <span className="flex-1 text-[15px]">{svc.name}</span>
+                    <span className="flex-1">
+                      <span className="block text-[15px]">{svc.name}</span>
+                      <span className="text-xs text-muted">{formatDuration(Number(svc.duration) || DEFAULT_DURATION)}</span>
+                    </span>
                     <span className="font-display font-semibold text-primary">{formatBRL(svc.price)}</span>
                   </button>
                 </li>

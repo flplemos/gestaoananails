@@ -6,11 +6,11 @@ import { addDays, toISODate } from '../lib/format'
  */
 
 export const seedServices = [
-  { id: 'svc-tips', name: 'Aplicação de tips', price: 100 },
-  { id: 'svc-manut', name: 'Manutenção até 20 dias', price: 80 },
-  { id: 'svc-banho', name: 'Banho em gel', price: 80 },
-  { id: 'svc-esm-maos', name: 'Somente esmaltação em gel (mãos)', price: 50 },
-  { id: 'svc-esm-pes', name: 'Somente esmaltação em gel (pés)', price: 50 },
+  { id: 'svc-tips', name: 'Aplicação de tips', price: 100, duration: 180 },
+  { id: 'svc-manut', name: 'Manutenção até 20 dias', price: 80, duration: 180 },
+  { id: 'svc-banho', name: 'Banho em gel', price: 80, duration: 120 },
+  { id: 'svc-esm-maos', name: 'Somente esmaltação em gel (mãos)', price: 50, duration: 60 },
+  { id: 'svc-esm-pes', name: 'Somente esmaltação em gel (pés)', price: 50, duration: 60 },
 ]
 
 export const seedClients = [
@@ -24,7 +24,7 @@ export const seedClients = [
 
 const svc = (id) => {
   const s = seedServices.find((x) => x.id === id)
-  return { serviceId: s.id, name: s.name, price: s.price }
+  return { serviceId: s.id, name: s.name, price: s.price, duration: s.duration }
 }
 
 const appt = (id, clientId, date, time, serviceIds, done = true) => {

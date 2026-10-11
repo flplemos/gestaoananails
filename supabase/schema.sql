@@ -10,6 +10,7 @@ create table if not exists public.services (
   user_id    uuid not null default auth.uid() references auth.users on delete cascade,
   name       text not null,
   price      numeric(10,2) not null default 0,
+  duration   int not null default 60 check (duration between 5 and 720), -- minutos
   created_at timestamptz not null default now()
 );
 

@@ -47,7 +47,7 @@ export const supabaseRepo = {
     if (services.length === 0) {
       seeding ??= supabase
         .from('services')
-        .insert(seedServices.map(({ name, price }) => ({ name, price })))
+        .insert(seedServices.map(({ name, price, duration }) => ({ name, price, duration })))
         .select()
         .then((res) => check(res).map(fromRow))
       services.push(...(await seeding))

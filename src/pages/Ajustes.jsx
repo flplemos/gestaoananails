@@ -7,6 +7,7 @@ import { useData } from '../context/DataContext'
 import { useTheme } from '../context/ThemeContext'
 import { THEMES } from '../lib/themes'
 import { formatBRL } from '../lib/format'
+import { DEFAULT_DURATION, DURATION_OPTIONS, formatDuration } from '../lib/schedule'
 
 export default function Ajustes() {
   const { theme, setTheme } = useTheme()
@@ -63,7 +64,10 @@ export default function Ajustes() {
                     onClick={() => setSheet({ open: true, service: s })}
                     className="flex w-full items-center gap-3 px-4 py-3.5 text-left"
                   >
-                    <span className="flex-1">{s.name}</span>
+                    <span className="flex-1">
+                      <span className="block">{s.name}</span>
+                      <span className="text-xs text-muted">{formatDuration(Number(s.duration) || DEFAULT_DURATION)}</span>
+                    </span>
                     <span className="font-display font-semibold text-primary">{formatBRL(s.price)}</span>
                     <Pencil size={15} className="text-muted" />
                   </button>
@@ -121,12 +125,16 @@ export default function Ajustes() {
 
 function ServiceSheet({ open, service, onClose }) {
   const { create, update, remove } = useData()
-  const [form, setForm] = useState(() => ({ name: service?.name ?? '', price: service?.price ?? '' }))
+  const [form, setForm] = useState(() => ({
+    name: service?.name ?? '',
+    price: service?.price ?? '',
+    duration: Number(service?.duration) || DEFAULT_DURATION,
+  }))
 
   const canSave = form.name.trim() && Number(form.price) >= 0 && form.price !== ''
 
   const handleSave = async () => {
-    const values = { name: form.name.trim(), price: Number(form.price) }
+    const values = { name: form.name.trim(), price: Number(form.price), duration: Number(form.duration) }
     if (service) await update('services', service.id, values)
     else await create('services', values)
     onClose()
@@ -175,6 +183,19 @@ function ServiceSheet({ open, service, onClose }) {
             value={form.price}
             onChange={(e) => setForm((f) => ({ ...f, price: e.target.value }))}
           />
+        </Field>
+        <Field label="Duração" hint="Usada para avisar quando dois atendimentos se cruzam.">
+          <select
+            className={inputClass}
+            value={form.duration}
+            onChange={(e) => setForm((f) => ({ ...f, duration: Number(e.target.value) }))}
+          >
+            {DURATION_OPTIONS.map((min) => (
+              <option key={min} value={min}>
+                {formatDuration(min)}
+              </option>
+            ))}
+          </select>
         </Field>
       </div>
     </Sheet>
