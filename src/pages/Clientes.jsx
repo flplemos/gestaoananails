@@ -66,7 +66,7 @@ export default function Clientes() {
                     <div className="min-w-0">
                       <p className="truncate font-bold">{c.name}</p>
                       <p className="truncate text-sm text-muted">
-                        {c.phone ? formatPhone(c.phone) : 'Sem telefone'} · {visits[c.id] ?? 0} visitas
+                        {c.phone ? formatPhone(c.phone) : 'Sem telefone'} · {visits[c.id] ?? 0} {visits[c.id] === 1 ? 'visita' : 'visitas'}
                       </p>
                     </div>
                   </button>
