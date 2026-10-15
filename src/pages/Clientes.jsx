@@ -4,7 +4,7 @@ import AppointmentSheet from '../components/AppointmentSheet'
 import { Avatar, Button, Card, EmptyState, Fab, Field, PageHeader, Sheet, WhatsAppIcon, inputClass } from '../components/ui'
 import { useData } from '../context/DataContext'
 import { formatBRL, formatPhone, fromISODate, toISODate, whatsappNumber } from '../lib/format'
-import { RETURN_DAYS, clientsToCall } from '../lib/insights'
+import { clientsToCall } from '../lib/insights'
 
 const normalize = (s) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
@@ -132,7 +132,7 @@ function ToCallSection({ items, onOpen }) {
                 <div className="min-w-0">
                   <p className="truncate font-bold">{client.name}</p>
                   <p className="truncate text-xs text-muted">
-                    {last.items.map((i) => i.name).join(' + ')} há {days} dias
+                    Última visita há {days} dias · {last.items.map((i) => i.name).join(' + ')}
                   </p>
                   <span
                     className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
@@ -140,10 +140,10 @@ function ToCallSection({ items, onOpen }) {
                     }`}
                   >
                     {overdue > 0
-                      ? `${overdue} ${overdue === 1 ? 'dia' : 'dias'} além dos ${RETURN_DAYS}`
+                      ? 'Já deveria ter voltado'
                       : overdue === 0
-                        ? `completa ${RETURN_DAYS} dias hoje`
-                        : `completa ${RETURN_DAYS} dias em ${-overdue} ${overdue === -1 ? 'dia' : 'dias'}`}
+                        ? 'Deve voltar hoje'
+                        : `Deve voltar em ${-overdue} ${overdue === -1 ? 'dia' : 'dias'}`}
                   </span>
                 </div>
               </button>
