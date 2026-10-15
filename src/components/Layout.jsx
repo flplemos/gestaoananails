@@ -1,5 +1,6 @@
 import { CalendarHeart, ChartColumn, CloudOff, Settings, Users, Wallet } from 'lucide-react'
-import { NavLink, Outlet } from 'react-router-dom'
+import { useEffect } from 'react'
+import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useData } from '../context/DataContext'
 import { Button, Splash } from './ui'
 
@@ -13,6 +14,16 @@ const TABS = [
 
 export default function Layout() {
   const { status, retry } = useData()
+  const navigate = useNavigate()
+
+  // Toque numa notificação com o app já aberto: o service worker manda a URL.
+  useEffect(() => {
+    const sw = navigator.serviceWorker
+    if (!sw) return
+    const onMessage = (e) => e.data?.type === 'open-url' && navigate(e.data.url)
+    sw.addEventListener('message', onMessage)
+    return () => sw.removeEventListener('message', onMessage)
+  }, [navigate])
 
   if (status === 'loading') return <Splash />
   if (status === 'error') {

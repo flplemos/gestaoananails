@@ -26,10 +26,13 @@ self.addEventListener('notificationclick', (event) => {
   event.notification.close()
   const url = event.notification.data?.url || '/'
   event.waitUntil(
-    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then((wins) => {
+    self.clients.matchAll({ type: 'window', includeUncontrolled: true }).then(async (wins) => {
       const open = wins.find((w) => new URL(w.url).origin === self.location.origin)
-      if (open) return open.focus().then((w) => w.navigate(url))
-      return self.clients.openWindow(url)
+      if (!open) return self.clients.openWindow(url)
+      // App já aberto: avisa o React para navegar (WindowClient.navigate não
+      // é confiável no iOS) e traz a janela para frente.
+      open.postMessage({ type: 'open-url', url })
+      return open.focus()
     }),
   )
 })

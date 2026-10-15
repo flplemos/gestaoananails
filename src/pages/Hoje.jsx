@@ -1,6 +1,8 @@
 import { AlertCircle, CalendarHeart, Check, ChevronRight, Clock } from 'lucide-react'
 import { useState } from 'react'
+import { useSearchParams } from 'react-router-dom'
 import AppointmentSheet from '../components/AppointmentSheet'
+import ConfirmDoneSheet from '../components/ConfirmDoneSheet'
 import { Avatar, Card, Fab, PageHeader, Segmented, Stepper } from '../components/ui'
 import { useData } from '../context/DataContext'
 import { addDays, formatBRL, formatDayLabel, formatLongDate, fromISODate, toISODate } from '../lib/format'
@@ -19,6 +21,10 @@ export default function Hoje() {
   const [mode, setMode] = useState('dia')
   const [date, setDate] = useState(toISODate)
   const [sheet, setSheet] = useState({ open: false, appointment: null })
+  // Push "foi concluído?" abre /?concluir=<id>.
+  const [params, setParams] = useSearchParams()
+  const confirming = appointments.find((a) => a.id === params.get('concluir'))
+  const closeConfirm = () => setParams({}, { replace: true })
 
   const toggleDone = (a) => {
     if (a.done && !confirm(`Voltar o atendimento de ${a.clientName} para "agendado"?`)) return
@@ -65,6 +71,16 @@ export default function Hoje() {
         defaultDate={mode === 'dia' ? date : toISODate()}
         onClose={() => setSheet({ open: false, appointment: null })}
       />
+      {confirming && (
+        <ConfirmDoneSheet
+          appointment={confirming}
+          onClose={closeConfirm}
+          onEdit={() => {
+            closeConfirm()
+            openAppointment(confirming)
+          }}
+        />
+      )}
     </>
   )
 }

@@ -1,4 +1,5 @@
-// Edge Function: envia os lembretes push 5h e 3h antes de cada atendimento.
+// Edge Function: lembretes push 5h e 3h antes de cada atendimento e,
+// 2h depois do fim, "foi concluído?" para os que não tiveram baixa.
 // Chamada a cada 5 min pelo pg_cron (ver supabase/cron.sql). Também aceita
 // mensagem avulsa: POST {"message": "...", "title"?: "..."} com x-cron-secret.
 // Secrets necessários: VAPID_PUBLIC_KEY, VAPID_PRIVATE_KEY, VAPID_SUBJECT, CRON_SECRET.
@@ -9,6 +10,8 @@ import { createClient } from 'npm:@supabase/supabase-js@2'
 
 // Minutos antes do atendimento em que cada lembrete é enviado.
 const OFFSETS = [300, 180]
+// Minutos depois do FIM do atendimento para perguntar se foi concluído.
+const FOLLOWUP_AFTER = 120
 
 /** 185 -> "3h05", 120 -> "2h", 45 -> "45 min" */
 const formatLeft = (min: number) => {
@@ -79,20 +82,45 @@ Deno.serve(async (req) => {
 
   const { data: due, error } = await supabase.rpc('claim_due_reminders', { offsets: OFFSETS })
   if (error) return json({ error: error.message }, 500)
-  if (!due?.length) return json({ due: 0, sent: 0 })
+  // "Foi concluído?" — 2h depois do fim de atendimentos ainda não concluídos.
+  const { data: followups, error: followError } = await supabase.rpc('claim_due_followups', {
+    after_minutes: FOLLOWUP_AFTER,
+  })
+  if (followError) console.error('followups', followError.message)
 
-  const userIds = [...new Set(due.map((d) => d.user_id))]
+  const pending = [...(due ?? []), ...(followups ?? [])]
+  if (!pending.length) return json({ due: 0, followups: 0, sent: 0 })
+
+  const userIds = [...new Set(pending.map((d) => d.user_id))]
   const { data: subs } = await supabase.from('push_subscriptions').select('*').in('user_id', userIds)
+  const subsOf = (userId: string) => (subs ?? []).filter((s) => s.user_id === userId)
 
-  for (const appt of due) {
+  for (const appt of due ?? []) {
     const payload = JSON.stringify({
       title: `⏰ ${appt.client_name} às ${appt.starts_at}`,
       body: `Em ${formatLeft(appt.minutes_left)}${appt.services ? ` · ${appt.services}` : ''}`,
       url: '/',
       tag: `${appt.appointment_id}-${appt.minutes_left}`,
     })
-    for (const sub of (subs ?? []).filter((s) => s.user_id === appt.user_id)) await send(sub, payload)
+    for (const sub of subsOf(appt.user_id)) await send(sub, payload)
   }
+
+  for (const appt of followups ?? []) {
+    const payload = JSON.stringify({
+      title: `✅ Atendimento de ${appt.client_name} foi concluído?`,
+      body: `${appt.starts_at}–${appt.ends_at}${appt.services ? ` · ${appt.services}` : ''}. Toque para confirmar no app.`,
+      url: `/?concluir=${appt.appointment_id}`,
+      tag: `${appt.appointment_id}-concluir`,
+    })
+    for (const sub of subsOf(appt.user_id)) await send(sub, payload)
+  }
+
   // A resposta fica salva em net._http_response (útil para diagnosticar).
-  return json({ due: due.length, subscriptions: subs?.length ?? 0, sent, failed })
+  return json({
+    due: due?.length ?? 0,
+    followups: followups?.length ?? 0,
+    subscriptions: subs?.length ?? 0,
+    sent,
+    failed,
+  })
 })
