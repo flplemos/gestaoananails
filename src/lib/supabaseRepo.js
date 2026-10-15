@@ -7,9 +7,9 @@ import { supabase } from './supabase'
  * pelo banco (default auth.uid()) e protegido por RLS.
  */
 
-const TO_DB = { clientId: 'client_id', clientName: 'client_name' }
+const TO_DB = { clientId: 'client_id', clientName: 'client_name', monthlyGoal: 'monthly_goal' }
 const FROM_DB = Object.fromEntries(Object.entries(TO_DB).map(([k, v]) => [v, k]))
-const NUMERIC = ['price', 'total', 'amount']
+const NUMERIC = ['price', 'total', 'amount', 'monthly_goal']
 const HIDDEN = ['user_id', 'created_at', 'reminders_sent']
 
 const toRow = (values) => {
@@ -22,7 +22,7 @@ const fromRow = (row) => {
   const out = {}
   for (const [k, v] of Object.entries(row)) {
     if (HIDDEN.includes(k)) continue
-    out[FROM_DB[k] ?? k] = NUMERIC.includes(k) ? Number(v) : v
+    out[FROM_DB[k] ?? k] = NUMERIC.includes(k) && v != null ? Number(v) : v
   }
   if (typeof out.time === 'string') out.time = out.time.slice(0, 5) // "10:30:00" -> "10:30"
   return out
@@ -52,7 +52,12 @@ export const supabaseRepo = {
         .then((res) => check(res).map(fromRow))
       services.push(...(await seeding))
     }
-    return { services, clients, appointments, expenses }
+    // Tolerante: se a migração 005 ainda não rodou, o app segue sem meta.
+    const settings = await supabase
+      .from('settings')
+      .select('*')
+      .then((res) => (res.error ? [] : res.data.map(fromRow)))
+    return { services, clients, appointments, expenses, settings }
   },
 
   async create(collection, values) {

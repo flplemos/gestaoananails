@@ -55,6 +55,13 @@ create table if not exists public.push_subscriptions (
   created_at timestamptz not null default now()
 );
 
+create table if not exists public.settings (
+  id           uuid primary key default gen_random_uuid(),
+  user_id      uuid not null unique default auth.uid() references auth.users on delete cascade,
+  monthly_goal numeric(10,2) check (monthly_goal is null or monthly_goal >= 0), -- meta mensal
+  created_at   timestamptz not null default now()
+);
+
 create index if not exists appointments_user_date_idx on public.appointments (user_id, date);
 create index if not exists appointments_pending_idx on public.appointments (date) where not done;
 create index if not exists expenses_user_date_idx on public.expenses (user_id, date);
@@ -64,7 +71,7 @@ create index if not exists clients_user_idx on public.clients (user_id);
 do $$
 declare t text;
 begin
-  foreach t in array array['services','clients','appointments','expenses','push_subscriptions'] loop
+  foreach t in array array['services','clients','appointments','expenses','push_subscriptions','settings'] loop
     execute format('alter table public.%I enable row level security', t);
     execute format('drop policy if exists "owner_all" on public.%I', t);
     execute format(

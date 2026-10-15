@@ -1,9 +1,10 @@
-import { CalendarPlus, ChevronRight, Pencil, Search, StickyNote, Trash2, Users } from 'lucide-react'
-import { useState } from 'react'
+import { CalendarPlus, ChevronRight, HeartHandshake, Pencil, Search, StickyNote, Trash2, Users } from 'lucide-react'
+import { useMemo, useState } from 'react'
 import AppointmentSheet from '../components/AppointmentSheet'
 import { Avatar, Button, Card, EmptyState, Fab, Field, PageHeader, Sheet, WhatsAppIcon, inputClass } from '../components/ui'
 import { useData } from '../context/DataContext'
 import { formatBRL, formatPhone, fromISODate, toISODate, whatsappNumber } from '../lib/format'
+import { RETURN_DAYS, clientsToCall } from '../lib/insights'
 
 const normalize = (s) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
@@ -19,6 +20,8 @@ export default function Clientes() {
   const q = normalize(query.trim())
   const list = q ? clients.filter((c) => normalize(c.name).includes(q)) : clients
   const detail = clients.find((c) => c.id === detailId)
+
+  const toCall = useMemo(() => clientsToCall(clients, appointments), [clients, appointments])
 
   const visits = appointments.reduce((acc, a) => {
     if (a.done) acc[a.clientId] = (acc[a.clientId] ?? 0) + 1
@@ -39,6 +42,13 @@ export default function Clientes() {
             onChange={(e) => setQuery(e.target.value)}
           />
         </div>
+
+        {/* Some durante a busca para não atrapalhar o resultado. */}
+        {!q && toCall.length > 0 && <ToCallSection items={toCall} onOpen={setDetailId} />}
+
+        {!q && toCall.length > 0 && (
+          <h3 className="-mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted">Todas as clientes</h3>
+        )}
 
         {list.length === 0 ? (
           <EmptyState icon={Users} title="Nenhuma cliente encontrada" text={q ? 'Tente outro nome.' : 'Toque no + para cadastrar.'} />
@@ -93,6 +103,56 @@ export default function Clientes() {
         onClose={() => setAppt(closed)}
       />
     </>
+  )
+}
+
+/** Clientes que já deveriam ter voltado (ver clientsToCall). */
+function ToCallSection({ items, onOpen }) {
+  const [showAll, setShowAll] = useState(false)
+  const visible = showAll ? items : items.slice(0, 3)
+
+  return (
+    <section>
+      <div className="mb-2 flex items-center justify-between px-1">
+        <h3 className="flex items-center gap-1.5 text-xs font-bold uppercase tracking-wider text-primary">
+          <HeartHandshake size={14} /> Para chamar ({items.length})
+        </h3>
+        {items.length > 3 && (
+          <button type="button" onClick={() => setShowAll((v) => !v)} className="text-xs font-bold text-primary">
+            {showAll ? 'ver menos' : 'ver todas'}
+          </button>
+        )}
+      </div>
+      <Card className="overflow-hidden ring-1 ring-primary/30">
+        <ul>
+          {visible.map(({ client, last, days, overdue }) => (
+            <li key={client.id} className="flex items-center gap-3 border-b border-dashed border-line px-4 py-3 last:border-0">
+              <button type="button" onClick={() => onOpen(client.id)} className="flex min-w-0 flex-1 items-center gap-3 text-left">
+                <Avatar name={client.name} />
+                <div className="min-w-0">
+                  <p className="truncate font-bold">{client.name}</p>
+                  <p className="truncate text-xs text-muted">
+                    {last.items.map((i) => i.name).join(' + ')} há {days} dias
+                  </p>
+                  <span
+                    className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                      overdue > 0 ? 'bg-amber-400/20 text-amber-500' : 'bg-soft text-primary'
+                    }`}
+                  >
+                    {overdue > 0
+                      ? `${overdue} ${overdue === 1 ? 'dia' : 'dias'} além dos ${RETURN_DAYS}`
+                      : overdue === 0
+                        ? `completa ${RETURN_DAYS} dias hoje`
+                        : `completa ${RETURN_DAYS} dias em ${-overdue} ${overdue === -1 ? 'dia' : 'dias'}`}
+                  </span>
+                </div>
+              </button>
+              <WhatsAppButton client={client} />
+            </li>
+          ))}
+        </ul>
+      </Card>
+    </section>
   )
 }
 

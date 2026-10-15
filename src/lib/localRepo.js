@@ -8,7 +8,7 @@ import { uid } from './format'
  */
 
 const KEY = 'ananails:data:v1'
-export const COLLECTIONS = ['services', 'clients', 'appointments', 'expenses']
+export const COLLECTIONS = ['services', 'clients', 'appointments', 'expenses', 'settings']
 
 function load() {
   try {

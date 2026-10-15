@@ -18,7 +18,7 @@ const fail = (err) => {
 }
 
 export function DataProvider({ children }) {
-  const [data, setData] = useState({ services: [], clients: [], appointments: [], expenses: [] })
+  const [data, setData] = useState({ services: [], clients: [], appointments: [], expenses: [], settings: [] })
   const [status, setStatus] = useState('loading')
   const [attempt, setAttempt] = useState(0)
 
@@ -76,6 +76,12 @@ export function DataProvider({ children }) {
       clients: [...data.clients].sort(byName),
       appointments: [...data.appointments].sort(byTime),
       expenses: [...data.expenses].sort((a, b) => b.date.localeCompare(a.date)),
+      // Configurações: uma linha por usuária (ex.: monthlyGoal).
+      settings: data.settings?.[0] ?? {},
+      saveSettings: (values) =>
+        data.settings?.[0]
+          ? actions.update('settings', data.settings[0].id, values)
+          : actions.create('settings', values),
       ...actions,
     }),
     [data, status, actions],

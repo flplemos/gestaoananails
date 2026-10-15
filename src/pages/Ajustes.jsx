@@ -1,5 +1,6 @@
-import { Bell, Check, LogOut, Palette, Pencil, Plus, RotateCcw, Sparkles, Trash2 } from 'lucide-react'
+import { Bell, Check, LogOut, Palette, Pencil, Plus, RotateCcw, Sparkles, Target, Trash2 } from 'lucide-react'
 import { useState } from 'react'
+import GoalSheet from '../components/GoalSheet'
 import NotificationsCard from '../components/NotificationsCard'
 import { Button, Card, Field, PageHeader, Sheet, inputClass } from '../components/ui'
 import { useAuth } from '../context/AuthContext'
@@ -11,7 +12,8 @@ import { DEFAULT_DURATION, DURATION_OPTIONS, formatDuration } from '../lib/sched
 
 export default function Ajustes() {
   const { theme, setTheme } = useTheme()
-  const { services, reset } = useData()
+  const { services, reset, settings } = useData()
+  const [goalOpen, setGoalOpen] = useState(false)
   const { user, signOut } = useAuth()
   const [sheet, setSheet] = useState({ open: false, service: null })
 
@@ -79,6 +81,24 @@ export default function Ajustes() {
 
         <section>
           <h2 className="mb-2 flex items-center gap-2 px-1 text-sm text-primary">
+            <Target size={16} /> Meta mensal
+          </h2>
+          <Card className="overflow-hidden">
+            <button type="button" onClick={() => setGoalOpen(true)} className="flex w-full items-center gap-3 px-4 py-3.5 text-left">
+              <span className="flex-1">
+                <span className="block">Meta de faturamento</span>
+                <span className="text-xs text-muted">Acompanhe em Faturamento › Mês</span>
+              </span>
+              <span className="font-display font-semibold text-primary">
+                {settings.monthlyGoal ? formatBRL(settings.monthlyGoal) : 'Definir'}
+              </span>
+              <Pencil size={15} className="text-muted" />
+            </button>
+          </Card>
+        </section>
+
+        <section>
+          <h2 className="mb-2 flex items-center gap-2 px-1 text-sm text-primary">
             <Bell size={16} /> Notificações
           </h2>
           <NotificationsCard />
@@ -116,6 +136,7 @@ export default function Ajustes() {
         <p className="pb-2 text-center text-xs text-muted">Ana Nails · Sua autoestima começa nas unhas ✨</p>
       </div>
 
+      {goalOpen && <GoalSheet open onClose={() => setGoalOpen(false)} />}
       <ServiceSheet
         key={sheet.open ? (sheet.service?.id ?? 'new') : 'closed'}
         open={sheet.open} service={sheet.service} onClose={() => setSheet({ open: false, service: null })} />
