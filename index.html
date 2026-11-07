@@ -18,13 +18,7 @@
       rel="stylesheet"
     />
     <title>Ana Nails | Gestão</title>
-    <script>
-      // Aplica o tema salvo antes do React carregar (evita piscar o tema padrão).
-      try {
-        var t = localStorage.getItem('ananails:theme')
-        if (t) document.documentElement.dataset.theme = t
-      } catch (e) {}
-    </script>
+    <script src="/theme-init.js"></script>
   </head>
   <body>
     <div id="root"></div>

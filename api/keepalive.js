@@ -1,8 +1,11 @@
 // Vercel Cron (ver vercel.json): faz 1 consulta diária ao Supabase para o
 // projeto do plano gratuito não ser pausado por inatividade (7 dias).
+// A Vercel envia "Authorization: Bearer <CRON_SECRET>" automaticamente quando
+// a variável CRON_SECRET existe no projeto. Sem ela, o endpoint fica fechado.
 export default async function handler(req, res) {
   const secret = process.env.CRON_SECRET
-  if (secret && req.headers.authorization !== `Bearer ${secret}`) {
+  if (!secret) return res.status(500).json({ error: 'CRON_SECRET não configurado' })
+  if (req.headers.authorization !== `Bearer ${secret}`) {
     return res.status(401).json({ error: 'unauthorized' })
   }
 
