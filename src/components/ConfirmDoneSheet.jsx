@@ -1,6 +1,6 @@
 import { CalendarCheck, Check, Clock, Pencil } from 'lucide-react'
-import { useState } from 'react'
 import { useData } from '../context/DataContext'
+import { useSaving } from '../lib/useSaving'
 import { formatBRL, formatDayLabel } from '../lib/format'
 import { endTime } from '../lib/schedule'
 import { Avatar, Button, Card, Sheet } from './ui'
@@ -11,16 +11,13 @@ import { Avatar, Button, Card, Sheet } from './ui'
  */
 export default function ConfirmDoneSheet({ appointment, onClose, onEdit }) {
   const { services, update } = useData()
-  const [saving, setSaving] = useState(false)
+  const [saving, run] = useSaving()
 
   const confirmDone = async () => {
-    setSaving(true)
-    try {
+    await run(async () => {
       await update('appointments', appointment.id, { done: true })
       onClose()
-    } finally {
-      setSaving(false)
-    }
+    })
   }
 
   return (

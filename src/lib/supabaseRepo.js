@@ -30,6 +30,25 @@ const fromRow = (row) => {
 
 let seeding = null
 
+// O PostgREST devolve no máximo 1000 linhas por consulta (padrão do Supabase).
+// Sem paginar, o histórico seria cortado em silêncio depois de 1000
+// atendimentos e o faturamento sairia errado.
+const PAGE = 1000
+
+async function fetchAll(table) {
+  const rows = []
+  for (;;) {
+    const { data, error, count } = await supabase
+      .from(table)
+      .select('*', { count: 'exact' })
+      .order('id')
+      .range(rows.length, rows.length + PAGE - 1)
+    if (error) throw error
+    rows.push(...data)
+    if (data.length === 0 || rows.length >= (count ?? 0)) return rows.map(fromRow)
+  }
+}
+
 const check = ({ data, error }) => {
   if (error) throw error
   return data
@@ -37,11 +56,12 @@ const check = ({ data, error }) => {
 
 export const supabaseRepo = {
   async loadAll() {
-    const [services, clients, appointments, expenses] = await Promise.all(
-      ['services', 'clients', 'appointments', 'expenses'].map(async (t) =>
-        check(await supabase.from(t).select('*')).map(fromRow),
-      ),
-    )
+    // Tudo em paralelo. `settings` é tolerante: se a migração 005 ainda não
+    // rodou, o app segue sem meta.
+    const [services, clients, appointments, expenses, settings] = await Promise.all([
+      ...['services', 'clients', 'appointments', 'expenses'].map(fetchAll),
+      fetchAll('settings').catch(() => []),
+    ])
     // Primeira vez: cria o catálogo padrão da Ana (uma única vez, mesmo com o
     // efeito duplicado do StrictMode em dev).
     if (services.length === 0) {
@@ -52,11 +72,6 @@ export const supabaseRepo = {
         .then((res) => check(res).map(fromRow))
       services.push(...(await seeding))
     }
-    // Tolerante: se a migração 005 ainda não rodou, o app segue sem meta.
-    const settings = await supabase
-      .from('settings')
-      .select('*')
-      .then((res) => (res.error ? [] : res.data.map(fromRow)))
     return { services, clients, appointments, expenses, settings }
   },
 

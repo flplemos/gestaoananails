@@ -7,6 +7,7 @@ import { Avatar, Card, Fab, PageHeader, Segmented, Stepper } from '../components
 import { useData } from '../context/DataContext'
 import { addDays, formatBRL, formatDayLabel, formatLongDate, fromISODate, toISODate } from '../lib/format'
 import { endTime } from '../lib/schedule'
+import { useToday } from '../lib/useToday'
 
 const sum = (list) => list.reduce((s, a) => s + Number(a.total), 0)
 
@@ -19,7 +20,15 @@ const groupByDate = (list) =>
 export default function Hoje() {
   const { appointments, update } = useData()
   const [mode, setMode] = useState('dia')
-  const [date, setDate] = useState(toISODate)
+  // Virou o dia com o app aberto em segundo plano: se a tela estava em "hoje",
+  // acompanha o novo dia em vez de ficar parada em ontem.
+  const today = useToday()
+  const [seenToday, setSeenToday] = useState(today)
+  const [date, setDate] = useState(today)
+  if (today !== seenToday) {
+    setSeenToday(today)
+    if (date === seenToday) setDate(today)
+  }
   const [sheet, setSheet] = useState({ open: false, appointment: null })
   // Push "foi concluído?" abre /?concluir=<id>.
   const [params, setParams] = useSearchParams()
@@ -28,7 +37,8 @@ export default function Hoje() {
 
   const toggleDone = (a) => {
     if (a.done && !confirm(`Voltar o atendimento de ${a.clientName} para "agendado"?`)) return
-    update('appointments', a.id, { done: !a.done })
+    // A falha já é avisada pelo DataContext (alert); aqui só evita rejeição solta.
+    update('appointments', a.id, { done: !a.done }).catch(() => {})
   }
   const openAppointment = (a) => setSheet({ open: true, appointment: a })
   const goToDay = (d) => {
