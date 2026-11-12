@@ -35,7 +35,7 @@ export default function Login() {
           <img src="/logo.png" alt="Ana Nails" className="size-24 rounded-full bg-white p-2" />
         </div>
         <h1 className="mt-4 text-2xl text-primary">Ana Nails</h1>
-        <p className="text-sm text-muted">Sua autoestima começa nas unhas ✨</p>
+        <p className="text-sm text-muted">Sua autoestima começa nas unhas</p>
       </div>
 
       <form onSubmit={handleSubmit} className="space-y-4 animate-fade-up">

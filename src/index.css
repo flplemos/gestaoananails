@@ -14,7 +14,7 @@
   --primary-light: #a9756d;
   --on-primary: #ffffff;
   --ink: #5b3a35;
-  --muted: #a08480;
+  --muted: #80615d; /* 4.5:1 sobre o fundo rosa */
   --line: rgba(139, 90, 83, 0.2);
   --soft: rgba(139, 90, 83, 0.08);
 }
@@ -26,7 +26,7 @@
   --primary-light: #b39580;
   --on-primary: #ffffff;
   --ink: #4f3d31;
-  --muted: #a3907f;
+  --muted: #7a6759;
   --line: rgba(143, 110, 88, 0.2);
   --soft: rgba(143, 110, 88, 0.08);
 }
@@ -38,7 +38,7 @@
   --primary-light: #c77b93;
   --on-primary: #ffffff;
   --ink: #5c2f3d;
-  --muted: #b08997;
+  --muted: #885e6c;
   --line: rgba(168, 86, 111, 0.2);
   --soft: rgba(168, 86, 111, 0.08);
 }

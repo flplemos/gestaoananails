@@ -5,6 +5,7 @@ import AppointmentSheet from '../components/AppointmentSheet'
 import ConfirmDoneSheet from '../components/ConfirmDoneSheet'
 import { Avatar, Card, Fab, PageHeader, Segmented, Stepper } from '../components/ui'
 import { useData } from '../context/DataContext'
+import { confirmDialog } from '../lib/dialog'
 import { addDays, formatBRL, formatDayLabel, formatLongDate, fromISODate, toISODate } from '../lib/format'
 import { endTime } from '../lib/schedule'
 import { useToday } from '../lib/useToday'
@@ -35,8 +36,15 @@ export default function Hoje() {
   const confirming = appointments.find((a) => a.id === params.get('concluir'))
   const closeConfirm = () => setParams({}, { replace: true })
 
-  const toggleDone = (a) => {
-    if (a.done && !confirm(`Voltar o atendimento de ${a.clientName} para "agendado"?`)) return
+  const toggleDone = async (a) => {
+    if (a.done) {
+      const ok = await confirmDialog({
+        title: 'Voltar para "agendado"?',
+        message: `O atendimento de ${a.clientName} deixa de contar no faturamento.`,
+        confirmLabel: 'Voltar para agendado',
+      })
+      if (!ok) return
+    }
     // A falha já é avisada pelo DataContext (alert); aqui só evita rejeição solta.
     update('appointments', a.id, { done: !a.done }).catch(() => {})
   }
@@ -48,7 +56,7 @@ export default function Hoje() {
 
   return (
     <>
-      <PageHeader title="Olá, Ana ✨" subtitle={formatLongDate(mode === 'dia' ? date : toISODate())} />
+      <PageHeader title="Olá, Ana" subtitle={formatLongDate(mode === 'dia' ? date : toISODate())} />
 
       <div className="space-y-4 px-5">
         <Segmented
@@ -180,12 +188,12 @@ function AgendaView({ appointments, onOpen, onToggle, onDay }) {
 function SummaryCard({ label, value, stats }) {
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-primary to-primary-light p-5 text-on-primary animate-fade-up">
-      <p className="text-sm opacity-85">{label}</p>
+      <p className="text-sm opacity-95">{label}</p>
       <p className="mt-1 font-display text-4xl font-bold tracking-tight">{value}</p>
       <div className="mt-4 flex gap-5 text-sm">
         {stats.map(([k, v]) => (
           <div key={k}>
-            <p className="opacity-75">{k}</p>
+            <p className="opacity-90">{k}</p>
             <p className="font-display font-semibold">{v}</p>
           </div>
         ))}
@@ -218,8 +226,8 @@ function AppointmentList({ list, onOpen, onToggle, showDate = false }) {
               <Avatar name={a.clientName} />
               <div className="min-w-0 flex-1">
                 <p className="truncate font-bold">{a.clientName}</p>
-                <p className="truncate text-sm text-muted">{a.items.map((it) => it.name).join(' + ')}</p>
-                <p className="mt-0.5 flex items-center gap-1 text-xs font-bold text-primary-light">
+                <p className="line-clamp-2 text-sm text-muted">{a.items.map((it) => it.name).join(' + ')}</p>
+                <p className="mt-0.5 flex items-center gap-1 text-xs font-bold text-primary">
                   <Clock size={12} /> {showDate && `${fromISODate(a.date).toLocaleDateString('pt-BR', { day: '2-digit', month: '2-digit' })} · `}
                   {a.time}–{endTime(a, services)} · {formatBRL(a.total)}
                 </p>

@@ -52,7 +52,7 @@ export default function ConfirmDoneSheet({ appointment, onClose, onEdit }) {
         <div className="min-w-0 flex-1">
           <p className="truncate font-bold">{appointment.clientName}</p>
           <p className="text-sm text-muted">{appointment.items.map((i) => i.name).join(' + ')}</p>
-          <p className="mt-1 flex items-center gap-1 text-xs font-bold text-primary-light">
+          <p className="mt-1 flex items-center gap-1 text-xs font-bold text-primary">
             <CalendarCheck size={12} /> {formatDayLabel(appointment.date)}
             <Clock size={12} className="ml-1" /> {appointment.time}–{endTime(appointment, services)}
           </p>
@@ -61,7 +61,7 @@ export default function ConfirmDoneSheet({ appointment, onClose, onEdit }) {
       </Card>
       <p className="mt-3 px-1 text-sm text-muted">
         {appointment.done
-          ? 'Este atendimento já está marcado como feito e conta no faturamento. ✨'
+          ? 'Este atendimento já está marcado como feito e conta no faturamento.'
           : 'Ao concluir, o valor entra no faturamento. Se o valor ou os serviços mudaram, toque em Editar.'}
       </p>
     </Sheet>

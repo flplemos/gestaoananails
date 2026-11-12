@@ -1,4 +1,4 @@
-import { CalendarCheck, ChartColumn, Pencil, Sparkles, Target, TrendingDown, TrendingUp } from 'lucide-react'
+import { CalendarCheck, ChartColumn, ListOrdered, Pencil, Target, TrendingDown, TrendingUp } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import GoalSheet from '../components/GoalSheet'
 import { Card, EmptyState, PageHeader, Segmented, Stepper } from '../components/ui'
@@ -127,7 +127,7 @@ function YearView({ year, appointments, expenses, onMonth }) {
             </button>
           ))}
         </div>
-        <div className="mt-1 flex gap-1 text-center text-[10px] text-muted">
+        <div className="mt-1 flex gap-1 text-center text-xs text-muted">
           {SHORT_MONTHS.map((name, i) => (
             <span key={name} className={`flex-1 ${s.months[i].key === current ? 'font-bold text-primary' : ''}`}>
               {name[0].toUpperCase()}
@@ -138,14 +138,14 @@ function YearView({ year, appointments, expenses, onMonth }) {
 
       <div className="grid grid-cols-2 gap-2">
         <Card className="px-3 py-2.5">
-          <p className="text-[11px] text-muted">melhor mês</p>
+          <p className="text-xs text-muted">melhor mês</p>
           <p className="font-display font-semibold text-primary">{s.best ? MONTHS[s.best.index] : '—'}</p>
-          <p className="text-[11px] text-muted">{s.best ? formatBRL(s.best.profit) : ''}</p>
+          <p className="text-xs text-muted">{s.best ? formatBRL(s.best.profit) : ''}</p>
         </Card>
         <Card className="px-3 py-2.5">
-          <p className="text-[11px] text-muted">média por mês</p>
+          <p className="text-xs text-muted">média por mês</p>
           <p className="font-display font-semibold text-primary">{formatBRL(s.average)}</p>
-          <p className="text-[11px] text-muted">{s.count} atendimentos</p>
+          <p className="text-xs text-muted">{s.count} atendimentos</p>
         </Card>
       </div>
 
@@ -158,7 +158,7 @@ function HeroCard({ label, profit, change, changeLabel, revenue, expenses }) {
   const Trend = change != null && change < 0 ? TrendingDown : TrendingUp
   return (
     <Card className="relative overflow-hidden bg-gradient-to-br from-primary to-primary-light p-5 text-on-primary animate-fade-up">
-      <p className="text-sm opacity-85">{label}</p>
+      <p className="text-sm opacity-95">{label}</p>
       <div className="mt-1 flex flex-wrap items-baseline gap-x-2 gap-y-1">
         <p className="font-display text-4xl font-bold tracking-tight">{formatBRL(profit)}</p>
         {change != null && (
@@ -170,11 +170,11 @@ function HeroCard({ label, profit, change, changeLabel, revenue, expenses }) {
       </div>
       <div className="mt-4 flex gap-6 text-sm">
         <div>
-          <p className="opacity-75">Serviços</p>
+          <p className="opacity-90">Serviços</p>
           <p className="font-display font-semibold">{formatBRL(revenue)}</p>
         </div>
         <div>
-          <p className="opacity-75">Despesas</p>
+          <p className="opacity-90">Despesas</p>
           <p className="font-display font-semibold">{formatBRL(expenses)}</p>
         </div>
       </div>
@@ -211,7 +211,7 @@ function GoalCard({ profit }) {
                   <b>{formatBRL(profit)}</b> <span className="text-muted">de {formatBRL(goal)}</span>
                 </span>
                 <span className="text-muted">
-                  {profit >= goal ? 'Meta batida! 🎉' : `faltam ${formatBRL(goal - profit)}`}
+                  {profit >= goal ? 'Meta batida!' : `faltam ${formatBRL(goal - profit)}`}
                 </span>
               </div>
             </>
@@ -229,7 +229,7 @@ function MiniStat({ value, label }) {
   return (
     <Card className="px-1 py-2.5 text-center">
       <p className="font-display font-semibold text-primary">{value}</p>
-      <p className="text-[11px] text-muted">{label}</p>
+      <p className="text-xs text-muted">{label}</p>
     </Card>
   )
 }
@@ -246,7 +246,7 @@ function ServicesCard({ title, services }) {
   return (
     <section>
       <h3 className="mb-2 flex items-center gap-1.5 px-1 text-xs font-bold uppercase tracking-wider text-muted">
-        <Sparkles size={14} /> {title}
+        <ListOrdered size={14} /> {title}
       </h3>
       <Card className="space-y-3 p-4 text-sm">
         {services.slice(0, 5).map((svc) => (

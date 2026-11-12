@@ -1,5 +1,6 @@
 import { Bell, BellOff, BellRing, Share, SquarePlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { alertDialog } from '../lib/dialog'
 import { disablePush, enablePush, getPushStatus, testNotification } from '../lib/push'
 import { Button, Card } from './ui'
 
@@ -18,7 +19,7 @@ export default function NotificationsCard() {
       setStatus(await fn())
     } catch (err) {
       console.error(err)
-      alert('Não foi possível ativar as notificações. Tente de novo.')
+      alertDialog('Não foi possível ativar as notificações', 'Tente de novo.')
     } finally {
       setBusy(false)
     }

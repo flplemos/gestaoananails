@@ -1,4 +1,5 @@
 import { BrowserRouter, Navigate, Route, Routes } from 'react-router-dom'
+import DialogHost from './components/DialogHost'
 import Layout from './components/Layout'
 import { Splash } from './components/ui'
 import { AuthProvider, useAuth } from './context/AuthContext'
@@ -40,6 +41,7 @@ export default function App() {
     <ThemeProvider>
       <AuthProvider>
         <Gate />
+        <DialogHost />
       </AuthProvider>
     </ThemeProvider>
   )

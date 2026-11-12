@@ -2,6 +2,7 @@ import { AlertTriangle, Check, Clock, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useData } from '../context/DataContext'
 import { useSaving } from '../lib/useSaving'
+import { confirmDialog } from '../lib/dialog'
 import { formatBRL } from '../lib/format'
 import {
   DEFAULT_DURATION,
@@ -88,7 +89,12 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
     if (!canSave) return
     if (conflicts.length) {
       const list = conflicts.map((c) => `• ${describeAppointment(c, services)}`).join('\n')
-      if (!confirm(`Tem certeza? Esse horário cruza com:\n\n${list}\n\nAgendar mesmo assim?`)) return
+      const ok = await confirmDialog({
+        title: 'Horário ocupado',
+        message: `Esse horário cruza com:\n${list}`,
+        confirmLabel: 'Agendar mesmo assim',
+      })
+      if (!ok) return
     }
     await run(async () => {
       let client = matchedClient
@@ -111,7 +117,7 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
   }
 
   const handleDelete = async () => {
-    if (!confirm('Excluir este atendimento?')) return
+    if (!(await confirmDialog({ title: 'Excluir este atendimento?', confirmLabel: 'Excluir', danger: true }))) return
     await remove('appointments', appointment.id)
     onClose()
   }

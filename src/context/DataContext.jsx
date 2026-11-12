@@ -1,4 +1,5 @@
 import { createContext, useContext, useEffect, useMemo, useRef, useState } from 'react'
+import { alertDialog } from '../lib/dialog'
 import { localRepo } from '../lib/localRepo'
 import { supabase } from '../lib/supabase'
 import { supabaseRepo } from '../lib/supabaseRepo'
@@ -13,7 +14,7 @@ const byName = (a, b) => a.name.localeCompare(b.name, 'pt-BR')
 
 const fail = (err) => {
   console.error(err)
-  alert('Não foi possível salvar. Verifique a internet e tente de novo.')
+  alertDialog('Não foi possível salvar', 'Verifique a internet e tente de novo.')
   throw err
 }
 
