@@ -115,7 +115,7 @@ export function Button({ variant = 'primary', className = '', ...props }) {
     primary: 'bg-primary text-on-primary active:bg-primary-light',
     outline: 'border-2 border-primary text-primary active:bg-soft',
     danger: 'border-2 border-red-400/60 text-red-500 active:bg-red-50/10',
-    destructive: 'bg-red-600 text-white active:bg-red-700',
+    destructive: 'bg-[#b3413a] text-white active:bg-[#9c3832]',
     ghost: 'text-primary active:bg-soft',
   }
   return (
