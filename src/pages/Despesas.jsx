@@ -3,6 +3,7 @@ import { useState } from 'react'
 import { Button, Card, EmptyState, Fab, Field, PageHeader, Segmented, Sheet, Stepper, inputClass } from '../components/ui'
 import { useData } from '../context/DataContext'
 import { useSaving } from '../lib/useSaving'
+import { confirmDialog } from '../lib/dialog'
 import {
   addDays,
   addMonths,
@@ -128,7 +129,7 @@ function ExpenseSheet({ open, expense, defaultDate, onClose }) {
   }
 
   const handleDelete = async () => {
-    if (!confirm('Excluir esta despesa?')) return
+    if (!(await confirmDialog({ title: 'Excluir esta despesa?', confirmLabel: 'Excluir', danger: true }))) return
     await remove('expenses', expense.id)
     onClose()
   }

@@ -81,7 +81,7 @@ export function Sheet({ open, title, onClose, children, footer }) {
             type="button"
             onClick={onClose}
             aria-label="Fechar"
-            className="mt-3 grid size-9 place-items-center rounded-full bg-surface text-primary"
+            className="mt-2 grid size-11 place-items-center rounded-full bg-surface text-primary"
           >
             <X size={18} />
           </button>
@@ -115,6 +115,7 @@ export function Button({ variant = 'primary', className = '', ...props }) {
     primary: 'bg-primary text-on-primary active:bg-primary-light',
     outline: 'border-2 border-primary text-primary active:bg-soft',
     danger: 'border-2 border-red-400/60 text-red-500 active:bg-red-50/10',
+    destructive: 'bg-red-600 text-white active:bg-red-700',
     ghost: 'text-primary active:bg-soft',
   }
   return (
@@ -134,7 +135,7 @@ export function Segmented({ options, value, onChange }) {
           key={o.value}
           type="button"
           onClick={() => onChange(o.value)}
-          className={`rounded-full py-2 text-sm font-display font-semibold transition ${
+          className={`min-h-11 rounded-full py-2 text-sm font-display font-semibold transition ${
             value === o.value ? 'bg-primary text-on-primary' : 'text-muted'
           }`}
         >
@@ -148,13 +149,13 @@ export function Segmented({ options, value, onChange }) {
 export function Stepper({ label, onPrev, onNext, onLabelClick }) {
   return (
     <div className="flex items-center justify-between rounded-full bg-surface p-1 shadow-card">
-      <button type="button" onClick={onPrev} aria-label="Anterior" className="grid size-9 place-items-center rounded-full text-primary active:bg-soft">
+      <button type="button" onClick={onPrev} aria-label="Anterior" className="grid size-11 place-items-center rounded-full text-primary active:bg-soft">
         <ChevronLeft size={20} />
       </button>
-      <button type="button" onClick={onLabelClick} className="font-display text-sm font-semibold capitalize text-primary">
+      <button type="button" onClick={onLabelClick} className="min-h-11 flex-1 font-display text-sm font-semibold capitalize text-primary">
         {label}
       </button>
-      <button type="button" onClick={onNext} aria-label="Próximo" className="grid size-9 place-items-center rounded-full text-primary active:bg-soft">
+      <button type="button" onClick={onNext} aria-label="Próximo" className="grid size-11 place-items-center rounded-full text-primary active:bg-soft">
         <ChevronRight size={20} />
       </button>
     </div>

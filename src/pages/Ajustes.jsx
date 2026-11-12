@@ -1,4 +1,4 @@
-import { Bell, Check, LogOut, Palette, Pencil, Plus, RotateCcw, Sparkles, Target, Trash2 } from 'lucide-react'
+import { Bell, Check, ClipboardList, LogOut, Palette, Pencil, Plus, RotateCcw, Target, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import GoalSheet from '../components/GoalSheet'
 import NotificationsCard from '../components/NotificationsCard'
@@ -7,6 +7,7 @@ import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
 import { useTheme } from '../context/ThemeContext'
 import { useSaving } from '../lib/useSaving'
+import { confirmDialog } from '../lib/dialog'
 import { THEMES } from '../lib/themes'
 import { formatBRL } from '../lib/format'
 import { DEFAULT_DURATION, DURATION_OPTIONS, formatDuration } from '../lib/schedule'
@@ -32,6 +33,7 @@ export default function Ajustes() {
                 key={t.id}
                 type="button"
                 onClick={() => setTheme(t.id)}
+                aria-pressed={theme === t.id}
                 className={`relative flex items-center gap-3 rounded-card bg-surface p-3 text-left shadow-card ring-2 transition ${
                   theme === t.id ? 'ring-primary' : 'ring-transparent'
                 }`}
@@ -42,7 +44,9 @@ export default function Ajustes() {
                 </span>
                 <span className="font-display text-sm font-semibold">{t.name}</span>
                 {theme === t.id && (
-                  <Check size={16} className="absolute right-3 top-1/2 -translate-y-1/2 text-primary" strokeWidth={3} />
+                  <span className="absolute -right-1.5 -top-1.5 grid size-5 place-items-center rounded-full bg-primary text-on-primary">
+                    <Check size={12} strokeWidth={3.5} />
+                  </span>
                 )}
               </button>
             ))}
@@ -52,9 +56,9 @@ export default function Ajustes() {
         <section>
           <div className="mb-2 flex items-center justify-between px-1">
             <h2 className="flex items-center gap-2 text-sm text-primary">
-              <Sparkles size={16} /> Catálogo de serviços
+              <ClipboardList size={16} /> Catálogo de serviços
             </h2>
-            <Button variant="ghost" className="px-3 py-1.5 text-sm" onClick={() => setSheet({ open: true, service: null })}>
+            <Button variant="ghost" className="px-3 py-2.5 text-sm" onClick={() => setSheet({ open: true, service: null })}>
               <Plus size={16} /> Adicionar
             </Button>
           </div>
@@ -113,7 +117,7 @@ export default function Ajustes() {
                 <p className="text-sm text-muted">
                   Conectada como <span className="font-bold text-ink">{user.email}</span>. Seus dados ficam salvos na nuvem.
                 </p>
-                <Button variant="outline" className="mt-3 w-full" onClick={() => confirm('Sair da conta?') && signOut()}>
+                <Button variant="outline" className="mt-3 w-full" onClick={async () => (await confirmDialog({ title: 'Sair da conta?', confirmLabel: 'Sair' })) && signOut()}>
                   <LogOut size={16} /> Sair
                 </Button>
               </>
@@ -124,7 +128,14 @@ export default function Ajustes() {
                   <Button
                     variant="outline"
                     className="mt-3 w-full"
-                    onClick={() => confirm('Apagar tudo e restaurar os dados de exemplo?') && reset()}
+                    onClick={async () =>
+                      (await confirmDialog({
+                        title: 'Restaurar os dados de exemplo?',
+                        message: 'Tudo o que está salvo neste aparelho será apagado.',
+                        confirmLabel: 'Restaurar',
+                        danger: true,
+                      })) && reset()
+                    }
                   >
                     <RotateCcw size={16} /> Restaurar dados de exemplo
                   </Button>
@@ -134,7 +145,7 @@ export default function Ajustes() {
           </Card>
         </section>
 
-        <p className="pb-2 text-center text-xs text-muted">Ana Nails · Sua autoestima começa nas unhas ✨</p>
+        <p className="pb-2 text-center text-xs text-muted">Ana Nails · Sua autoestima começa nas unhas</p>
       </div>
 
       {goalOpen && <GoalSheet open onClose={() => setGoalOpen(false)} />}
@@ -166,7 +177,13 @@ function ServiceSheet({ open, service, onClose }) {
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Excluir "${service.name}" do catálogo?`)) return
+    const ok = await confirmDialog({
+      title: `Excluir "${service.name}" do catálogo?`,
+      message: 'Os atendimentos já registrados não mudam.',
+      confirmLabel: 'Excluir',
+      danger: true,
+    })
+    if (!ok) return
     await remove('services', service.id)
     onClose()
   }

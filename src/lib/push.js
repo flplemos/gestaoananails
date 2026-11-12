@@ -68,7 +68,7 @@ export async function disablePush() {
 /** Notificação local, só para conferir que o aparelho exibe os avisos. */
 export async function testNotification() {
   const reg = await navigator.serviceWorker.ready
-  await reg.showNotification('⏰ Teste da Ana Nails', {
+  await reg.showNotification('Teste da Ana Nails', {
     body: 'Assim chegarão os avisos 5h e 3h antes de cada atendimento.',
     icon: '/icon-192.png',
   })

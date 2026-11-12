@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import AppointmentSheet from '../components/AppointmentSheet'
 import { Avatar, Button, Card, EmptyState, Fab, Field, PageHeader, Sheet, WhatsAppIcon, inputClass } from '../components/ui'
 import { useData } from '../context/DataContext'
+import { confirmDialog } from '../lib/dialog'
 import { formatBRL, formatPhone, fromISODate, toISODate, whatsappNumber } from '../lib/format'
 import { clientsToCall } from '../lib/insights'
 import { useSaving } from '../lib/useSaving'
@@ -119,7 +120,7 @@ function ToCallSection({ items, onOpen }) {
           <HeartHandshake size={14} /> Para chamar ({items.length})
         </h3>
         {items.length > 3 && (
-          <button type="button" onClick={() => setShowAll((v) => !v)} className="text-xs font-bold text-primary">
+          <button type="button" onClick={() => setShowAll((v) => !v)} className="-my-3 py-3 pl-4 text-xs font-bold text-primary">
             {showAll ? 'ver menos' : 'ver todas'}
           </button>
         )}
@@ -136,7 +137,7 @@ function ToCallSection({ items, onOpen }) {
                     Última visita há {days} dias · {last.items.map((i) => i.name).join(' + ')}
                   </p>
                   <span
-                    className={`mt-1 inline-block rounded-full px-2 py-0.5 text-[10px] font-bold ${
+                    className={`mt-1 inline-block rounded-full px-2 py-0.5 text-xs font-bold ${
                       overdue > 0 ? 'bg-amber-400/20 text-amber-500' : 'bg-soft text-primary'
                     }`}
                   >
@@ -242,7 +243,7 @@ function ClientDetailSheet({ client, onClose, onEdit, onSchedule, onOpenAppointm
           ].map(([label, value]) => (
             <Card key={label} className="px-2 py-3">
               <p className="font-display text-sm font-bold text-primary">{value}</p>
-              <p className="text-[11px] text-muted">{label}</p>
+              <p className="text-xs text-muted">{label}</p>
             </Card>
           ))}
         </div>
@@ -269,7 +270,7 @@ function HistoryList({ title, items, onOpen }) {
           {items.map((a) => (
             <li key={a.id} className="border-b border-dashed border-line last:border-0">
               <button type="button" onClick={() => onOpen(a)} className="flex w-full items-center gap-3 px-4 py-3 text-left">
-                <div className="w-14 shrink-0 text-xs font-bold text-primary-light">
+                <div className="w-14 shrink-0 text-xs font-bold text-primary">
                   {shortDate(a.date)}
                   <span className="block font-normal text-muted">{a.time}</span>
                 </div>
@@ -306,7 +307,13 @@ function ClientSheet({ open, client, onClose, onDeleted }) {
   }
 
   const handleDelete = async () => {
-    if (!confirm(`Excluir ${client.name}? Os atendimentos dela continuam no histórico.`)) return
+    const ok = await confirmDialog({
+      title: `Excluir ${client.name}?`,
+      message: 'Os atendimentos dela continuam no histórico.',
+      confirmLabel: 'Excluir',
+      danger: true,
+    })
+    if (!ok) return
     await remove('clients', client.id)
     onDeleted()
     onClose()
