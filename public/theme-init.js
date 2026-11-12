@@ -4,4 +4,6 @@
 try {
   var t = localStorage.getItem('ananails:theme')
   if (t) document.documentElement.dataset.theme = t
-} catch (e) {}
+} catch {
+  /* localStorage indisponível: segue com o tema padrão */
+}

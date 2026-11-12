@@ -5,6 +5,7 @@ import { Avatar, Button, Card, EmptyState, Fab, Field, PageHeader, Sheet, WhatsA
 import { useData } from '../context/DataContext'
 import { formatBRL, formatPhone, fromISODate, toISODate, whatsappNumber } from '../lib/format'
 import { clientsToCall } from '../lib/insights'
+import { useSaving } from '../lib/useSaving'
 
 const normalize = (s) => s.normalize('NFD').replace(/\p{Diacritic}/gu, '').toLowerCase()
 
@@ -286,6 +287,7 @@ function HistoryList({ title, items, onOpen }) {
 
 function ClientSheet({ open, client, onClose, onDeleted }) {
   const { create, update, remove } = useData()
+  const [saving, run] = useSaving()
   const [form, setForm] = useState(() => ({
     name: client?.name ?? '',
     phone: client?.phone ?? '',
@@ -295,10 +297,12 @@ function ClientSheet({ open, client, onClose, onDeleted }) {
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
 
   const handleSave = async () => {
-    const values = { ...form, name: form.name.trim() }
-    if (client) await update('clients', client.id, values)
-    else await create('clients', values)
-    onClose()
+    await run(async () => {
+      const values = { ...form, name: form.name.trim() }
+      if (client) await update('clients', client.id, values)
+      else await create('clients', values)
+      onClose()
+    })
   }
 
   const handleDelete = async () => {
@@ -320,8 +324,8 @@ function ClientSheet({ open, client, onClose, onDeleted }) {
               <Trash2 size={18} />
             </Button>
           )}
-          <Button onClick={handleSave} disabled={!form.name.trim()} className="flex-1">
-            Salvar
+          <Button onClick={handleSave} disabled={!form.name.trim() || saving} className="flex-1">
+            {saving ? 'Salvando…' : 'Salvar'}
           </Button>
         </div>
       }

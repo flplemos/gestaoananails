@@ -1,6 +1,7 @@
 import { AlertTriangle, Check, Clock, Trash2 } from 'lucide-react'
 import { useMemo, useState } from 'react'
 import { useData } from '../context/DataContext'
+import { useSaving } from '../lib/useSaving'
 import { formatBRL } from '../lib/format'
 import {
   DEFAULT_DURATION,
@@ -9,13 +10,15 @@ import {
   endTime,
   findConflicts,
   formatDuration,
+  fromMinutes,
 } from '../lib/schedule'
 import { Button, Field, Segmented, Sheet, inputClass } from './ui'
 
+/** Próxima meia hora cheia; depois das 23:30 fica em 23:30 (não vira "00:00" de hoje). */
 const nowTime = () => {
   const d = new Date()
-  d.setMinutes(Math.ceil(d.getMinutes() / 30) * 30)
-  return d.toTimeString().slice(0, 5)
+  const rounded = Math.ceil((d.getHours() * 60 + d.getMinutes()) / 30) * 30
+  return fromMinutes(Math.min(rounded, 23 * 60 + 30))
 }
 
 const emptyForm = (date) => ({
@@ -38,13 +41,18 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
   const [form, setForm] = useState(() =>
     appointment ? { ...appointment, phone: '' } : { ...emptyForm(defaultDate), ...preset },
   )
-  const [saving, setSaving] = useState(false)
+  const [saving, run] = useSaving()
 
   const set = (patch) => setForm((f) => ({ ...f, ...patch }))
 
-  const matchedClient = clients.find(
-    (c) => c.name.toLowerCase() === form.clientName.trim().toLowerCase(),
-  )
+  const typedName = form.clientName.trim().toLowerCase()
+  // Na edição, enquanto o nome não muda, vale a cliente do próprio atendimento
+  // (pode haver duas clientes com o mesmo nome).
+  const ownClient = appointment && clients.find((c) => c.id === appointment.clientId)
+  const matchedClient =
+    ownClient?.name.toLowerCase() === typedName
+      ? ownClient
+      : clients.find((c) => c.name.toLowerCase() === typedName)
   const suggestions = useMemo(() => {
     const q = form.clientName.trim().toLowerCase()
     if (!q || matchedClient) return []
@@ -82,8 +90,7 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
       const list = conflicts.map((c) => `• ${describeAppointment(c, services)}`).join('\n')
       if (!confirm(`Tem certeza? Esse horário cruza com:\n\n${list}\n\nAgendar mesmo assim?`)) return
     }
-    setSaving(true)
-    try {
+    await run(async () => {
       let client = matchedClient
       if (!client) {
         client = await create('clients', { name: form.clientName.trim(), phone: form.phone, notes: '' })
@@ -100,9 +107,7 @@ export default function AppointmentSheet({ open, onClose, appointment, defaultDa
       if (appointment) await update('appointments', appointment.id, values)
       else await create('appointments', values)
       onClose()
-    } finally {
-      setSaving(false)
-    }
+    })
   }
 
   const handleDelete = async () => {

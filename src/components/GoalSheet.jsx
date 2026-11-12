@@ -1,22 +1,20 @@
 import { Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { useData } from '../context/DataContext'
+import { useSaving } from '../lib/useSaving'
 import { Button, Field, Sheet, inputClass } from './ui'
 
 /** Define a meta de faturamento mensal (usada no Faturamento › Mês). */
 export default function GoalSheet({ open, onClose }) {
   const { settings, saveSettings } = useData()
   const [value, setValue] = useState(() => settings.monthlyGoal ?? '')
-  const [saving, setSaving] = useState(false)
+  const [saving, run] = useSaving()
 
   const save = async (monthlyGoal) => {
-    setSaving(true)
-    try {
+    await run(async () => {
       await saveSettings({ monthlyGoal })
       onClose()
-    } finally {
-      setSaving(false)
-    }
+    })
   }
 
   return (

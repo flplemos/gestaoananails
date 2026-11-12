@@ -6,6 +6,7 @@ import { Button, Card, Field, PageHeader, Sheet, inputClass } from '../component
 import { useAuth } from '../context/AuthContext'
 import { useData } from '../context/DataContext'
 import { useTheme } from '../context/ThemeContext'
+import { useSaving } from '../lib/useSaving'
 import { THEMES } from '../lib/themes'
 import { formatBRL } from '../lib/format'
 import { DEFAULT_DURATION, DURATION_OPTIONS, formatDuration } from '../lib/schedule'
@@ -146,6 +147,7 @@ export default function Ajustes() {
 
 function ServiceSheet({ open, service, onClose }) {
   const { create, update, remove } = useData()
+  const [saving, run] = useSaving()
   const [form, setForm] = useState(() => ({
     name: service?.name ?? '',
     price: service?.price ?? '',
@@ -155,10 +157,12 @@ function ServiceSheet({ open, service, onClose }) {
   const canSave = form.name.trim() && Number(form.price) >= 0 && form.price !== ''
 
   const handleSave = async () => {
-    const values = { name: form.name.trim(), price: Number(form.price), duration: Number(form.duration) }
-    if (service) await update('services', service.id, values)
-    else await create('services', values)
-    onClose()
+    await run(async () => {
+      const values = { name: form.name.trim(), price: Number(form.price), duration: Number(form.duration) }
+      if (service) await update('services', service.id, values)
+      else await create('services', values)
+      onClose()
+    })
   }
 
   const handleDelete = async () => {
@@ -179,8 +183,8 @@ function ServiceSheet({ open, service, onClose }) {
               <Trash2 size={18} />
             </Button>
           )}
-          <Button onClick={handleSave} disabled={!canSave} className="flex-1">
-            Salvar
+          <Button onClick={handleSave} disabled={!canSave || saving} className="flex-1">
+            {saving ? 'Salvando…' : 'Salvar'}
           </Button>
         </div>
       }

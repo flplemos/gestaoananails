@@ -2,6 +2,7 @@ import { Receipt, Trash2 } from 'lucide-react'
 import { useState } from 'react'
 import { Button, Card, EmptyState, Fab, Field, PageHeader, Segmented, Sheet, Stepper, inputClass } from '../components/ui'
 import { useData } from '../context/DataContext'
+import { useSaving } from '../lib/useSaving'
 import {
   addDays,
   addMonths,
@@ -109,6 +110,7 @@ export default function Despesas() {
 
 function ExpenseSheet({ open, expense, defaultDate, onClose }) {
   const { create, update, remove } = useData()
+  const [saving, run] = useSaving()
   const [form, setForm] = useState(() =>
     expense ? { ...expense } : { description: '', amount: '', date: defaultDate },
   )
@@ -117,10 +119,12 @@ function ExpenseSheet({ open, expense, defaultDate, onClose }) {
   const canSave = form.description.trim() && Number(form.amount) > 0 && form.date
 
   const handleSave = async () => {
-    const values = { description: form.description.trim(), amount: Number(form.amount), date: form.date }
-    if (expense) await update('expenses', expense.id, values)
-    else await create('expenses', values)
-    onClose()
+    await run(async () => {
+      const values = { description: form.description.trim(), amount: Number(form.amount), date: form.date }
+      if (expense) await update('expenses', expense.id, values)
+      else await create('expenses', values)
+      onClose()
+    })
   }
 
   const handleDelete = async () => {
@@ -141,8 +145,8 @@ function ExpenseSheet({ open, expense, defaultDate, onClose }) {
               <Trash2 size={18} />
             </Button>
           )}
-          <Button onClick={handleSave} disabled={!canSave} className="flex-1">
-            Salvar
+          <Button onClick={handleSave} disabled={!canSave || saving} className="flex-1">
+            {saving ? 'Salvando…' : 'Salvar'}
           </Button>
         </div>
       }
