@@ -55,6 +55,11 @@ VITE_DEMO=true npm run build
 
 - `VITE_DEMO=true` liga a marca neutra (`src/lib/brand.js`), a faixa e o tour
   (`src/components/DemoChrome.jsx`). Sem ela, o app é o da Ana, sem mudanças.
-- `VITE_DEMO_CTA_URL` (opcional): para onde vai o botão "Quero usar".
+- `VITE_DEMO_CTA_URL` (opcional): para onde vai o botão "Quero usar". Na demo
+  publicada (projeto `nailsapp-demo` no Cloudflare Pages) aponta para o WhatsApp
+  com a mensagem "Oi! Testei a demonstração do NailsApp e quero usar.", para
+  identificar quem veio pela demo. Sem ela, o botão leva ao contato da landing.
+- Variáveis do projeto `nailsapp-demo`: `VITE_DEMO=true`, `NODE_VERSION=22` e
+  `VITE_DEMO_CTA_URL`. Mudanças em variáveis só valem na próxima publicação.
 - Não defina `VITE_SUPABASE_URL` nem `VITE_SUPABASE_PUBLISHABLE_KEY` na demo.
 - `public/_headers` traz os cabeçalhos de segurança no Cloudflare Pages.
