@@ -5,6 +5,7 @@ import AppointmentSheet from '../components/AppointmentSheet'
 import ConfirmDoneSheet from '../components/ConfirmDoneSheet'
 import { Avatar, Card, Fab, PageHeader, Segmented, Stepper } from '../components/ui'
 import { useData } from '../context/DataContext'
+import { BRAND } from '../lib/brand'
 import { confirmDialog } from '../lib/dialog'
 import { addDays, formatBRL, formatDayLabel, formatLongDate, fromISODate, toISODate } from '../lib/format'
 import { endTime } from '../lib/schedule'
@@ -56,7 +57,7 @@ export default function Hoje() {
 
   return (
     <>
-      <PageHeader title="Olá, Ana" subtitle={formatLongDate(mode === 'dia' ? date : toISODate())} />
+      <PageHeader title={`Olá, ${BRAND.owner}`} subtitle={formatLongDate(mode === 'dia' ? date : toISODate())} />
 
       <div className="space-y-4 px-5">
         <Segmented
@@ -81,7 +82,7 @@ export default function Hoje() {
         )}
       </div>
 
-      <Fab label="Novo atendimento" onClick={() => setSheet({ open: true, appointment: null })} />
+      <Fab data-tour="novo" label="Novo atendimento" onClick={() => setSheet({ open: true, appointment: null })} />
       <AppointmentSheet
         key={sheet.open ? (sheet.appointment?.id ?? 'new') : 'closed'}
         open={sheet.open}
@@ -108,6 +109,7 @@ function DayView({ date, setDate, list, onOpen, onToggle }) {
   return (
     <>
       <SummaryCard
+        tour="resumo"
         label={`Faturamento de ${formatDayLabel(date).toLowerCase()}`}
         value={formatBRL(sum(done))}
         stats={[
@@ -185,9 +187,9 @@ function AgendaView({ appointments, onOpen, onToggle, onDay }) {
   )
 }
 
-function SummaryCard({ label, value, stats }) {
+function SummaryCard({ label, value, stats, tour }) {
   return (
-    <Card className="relative overflow-hidden bg-gradient-to-br from-primary to-primary-light p-5 text-on-primary animate-fade-up">
+    <Card data-tour={tour} className="relative overflow-hidden bg-gradient-to-br from-primary to-primary-light p-5 text-on-primary animate-fade-up">
       <p className="text-sm opacity-95">{label}</p>
       <p className="mt-1 font-display text-4xl font-bold tracking-tight">{value}</p>
       <div className="mt-4 flex gap-5 text-sm">
@@ -198,7 +200,9 @@ function SummaryCard({ label, value, stats }) {
           </div>
         ))}
       </div>
-      <img src="/logo.png" alt="" className="pointer-events-none absolute -right-6 -bottom-8 size-36 opacity-15 invert brightness-200" />
+      {BRAND.watermark && (
+        <img src={BRAND.watermark} alt="" className="pointer-events-none absolute -right-6 -bottom-8 size-36 opacity-15 invert brightness-200" />
+      )}
     </Card>
   )
 }
@@ -237,6 +241,7 @@ function AppointmentList({ list, onOpen, onToggle, showDate = false }) {
             <button
               type="button"
               onClick={() => onToggle(a)}
+              data-tour={a.done ? undefined : 'concluir'}
               className={`flex shrink-0 items-center gap-1 rounded-full px-3 py-2 font-display text-xs font-semibold transition active:scale-95 ${
                 a.done ? 'bg-primary text-on-primary' : 'border-2 border-primary/60 text-primary'
               }`}

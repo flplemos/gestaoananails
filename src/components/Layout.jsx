@@ -2,6 +2,8 @@ import { CalendarHeart, ChartColumn, CloudOff, Settings, Users, Wallet } from 'l
 import { useEffect } from 'react'
 import { NavLink, Outlet, useNavigate } from 'react-router-dom'
 import { useData } from '../context/DataContext'
+import { DEMO } from '../lib/brand'
+import DemoChrome from './DemoChrome'
 import { Button, Splash } from './ui'
 
 const TABS = [
@@ -39,6 +41,7 @@ export default function Layout() {
 
   return (
     <div className="mx-auto min-h-dvh max-w-lg bg-bg">
+      {DEMO && <DemoChrome />}
       <main className="pb-[calc(6rem+env(safe-area-inset-bottom))]">
         <Outlet />
       </main>
@@ -50,6 +53,7 @@ export default function Layout() {
               <NavLink
                 to={to}
                 end={end}
+                data-tour={`aba-${label.toLowerCase()}`}
                 className={({ isActive }) =>
                   `flex flex-col items-center gap-1 pt-2.5 pb-2 text-[11px] font-bold transition ${
                     isActive ? 'text-primary' : 'text-muted'

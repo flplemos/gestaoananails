@@ -1,5 +1,6 @@
 import { Bell, BellOff, BellRing, Share, SquarePlus } from 'lucide-react'
 import { useEffect, useState } from 'react'
+import { BRAND, DEMO } from '../lib/brand'
 import { alertDialog } from '../lib/dialog'
 import { disablePush, enablePush, getPushStatus, testNotification } from '../lib/push'
 import { Button, Card } from './ui'
@@ -43,13 +44,17 @@ export default function NotificationsCard() {
       )}
 
       {status === 'unsupported' && (
-        <p className="text-sm text-muted">Este navegador não suporta notificações (ou o banco ainda não está conectado).</p>
+        <p className="text-sm text-muted">
+          {DEMO
+            ? 'Na demonstração os lembretes ficam desligados. Na sua conta, eles chegam no celular 5 horas e 3 horas antes de cada atendimento.'
+            : 'Este navegador não suporta notificações (ou o banco ainda não está conectado).'}
+        </p>
       )}
 
       {status === 'denied' && (
         <p className="flex gap-2 text-sm text-muted">
           <BellOff size={18} className="shrink-0 text-primary" />
-          As notificações foram bloqueadas. No iPhone: Ajustes › Notificações › Ana Nails › Permitir.
+          As notificações foram bloqueadas. No iPhone: Ajustes › Notificações › {BRAND.name} › Permitir.
         </p>
       )}
 

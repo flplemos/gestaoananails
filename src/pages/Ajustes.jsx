@@ -8,6 +8,7 @@ import { useData } from '../context/DataContext'
 import { useTheme } from '../context/ThemeContext'
 import { useSaving } from '../lib/useSaving'
 import { confirmDialog } from '../lib/dialog'
+import { BRAND } from '../lib/brand'
 import { THEMES } from '../lib/themes'
 import { formatBRL } from '../lib/format'
 import { DEFAULT_DURATION, DURATION_OPTIONS, formatDuration } from '../lib/schedule'
@@ -145,7 +146,7 @@ export default function Ajustes() {
           </Card>
         </section>
 
-        <p className="pb-2 text-center text-xs text-muted">Ana Nails · Sua autoestima começa nas unhas</p>
+        <p className="pb-2 text-center text-xs text-muted">{BRAND.name} · {BRAND.slogan}</p>
       </div>
 
       {goalOpen && <GoalSheet open onClose={() => setGoalOpen(false)} />}

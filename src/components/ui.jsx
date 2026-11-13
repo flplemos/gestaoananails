@@ -1,5 +1,6 @@
 import { ChevronLeft, ChevronRight, Plus, X } from 'lucide-react'
 import { useEffect } from 'react'
+import { BRAND } from '../lib/brand'
 import { initials } from '../lib/format'
 
 export function PageHeader({ title, subtitle, right }) {
@@ -7,8 +8,8 @@ export function PageHeader({ title, subtitle, right }) {
     <header className="flex items-end justify-between gap-3 px-5 pt-[max(1.25rem,env(safe-area-inset-top))] pb-4">
       <div className="flex items-center gap-3 min-w-0">
         <img
-          src="/logo.png"
-          alt="Ana Nails"
+          src={BRAND.logo}
+          alt={BRAND.name}
           className="size-11 shrink-0 rounded-full bg-white p-0.5 ring-2 ring-primary/70 shadow-[0_8px_20px_rgba(139,90,83,0.2)]"
         />
         <div className="min-w-0">
@@ -29,12 +30,13 @@ export function Card({ className = '', children, ...props }) {
   )
 }
 
-export function Fab({ onClick, label }) {
+export function Fab({ onClick, label, ...props }) {
   return (
     <button
       type="button"
       onClick={onClick}
       aria-label={label}
+      {...props}
       className="fixed z-30 bottom-[calc(5.5rem+env(safe-area-inset-bottom))] right-[max(1.25rem,calc(50vw-15rem))] grid size-14 place-items-center rounded-full bg-gradient-to-br from-primary to-primary-light text-on-primary shadow-fab transition active:scale-95"
     >
       <Plus size={28} strokeWidth={2.4} />
@@ -194,7 +196,7 @@ export function WhatsAppIcon({ size = 20, className = '' }) {
 export function Splash() {
   return (
     <div className="grid min-h-dvh place-items-center">
-      <img src="/logo.png" alt="Ana Nails" className="size-20 animate-pulse rounded-full bg-white p-2" />
+      <img src={BRAND.logo} alt={BRAND.name} className="size-20 animate-pulse rounded-full bg-white p-2" />
     </div>
   )
 }
