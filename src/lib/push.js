@@ -1,3 +1,4 @@
+import { BRAND } from './brand'
 import { supabase } from './supabase'
 
 const VAPID_PUBLIC_KEY = import.meta.env.VITE_VAPID_PUBLIC_KEY
@@ -68,7 +69,7 @@ export async function disablePush() {
 /** Notificação local, só para conferir que o aparelho exibe os avisos. */
 export async function testNotification() {
   const reg = await navigator.serviceWorker.ready
-  await reg.showNotification('Teste da Ana Nails', {
+  await reg.showNotification(`Teste do ${BRAND.name}`, {
     body: 'Assim chegarão os avisos 5h e 3h antes de cada atendimento.',
     icon: '/icon-192.png',
   })

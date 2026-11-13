@@ -1,0 +1,13 @@
+{
+  "name": "NailsApp · demonstração",
+  "short_name": "NailsApp",
+  "description": "Demonstração do NailsApp: agenda, clientes e faturamento para manicure",
+  "lang": "pt-BR",
+  "start_url": "/",
+  "scope": "/",
+  "display": "standalone",
+  "orientation": "portrait",
+  "background_color": "#2A1E1C",
+  "theme_color": "#2A1E1C",
+  "icons": [{ "src": "/demo/logo.svg", "sizes": "any", "type": "image/svg+xml" }]
+}

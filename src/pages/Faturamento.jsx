@@ -3,6 +3,7 @@ import { useMemo, useState } from 'react'
 import GoalSheet from '../components/GoalSheet'
 import { Card, EmptyState, PageHeader, Segmented, Stepper } from '../components/ui'
 import { useData } from '../context/DataContext'
+import { BRAND } from '../lib/brand'
 import { MONTHS, addMonths, formatBRL, formatMonthKey, monthKey, toISODate } from '../lib/format'
 import { monthSummary, yearSummary } from '../lib/insights'
 
@@ -178,7 +179,9 @@ function HeroCard({ label, profit, change, changeLabel, revenue, expenses }) {
           <p className="font-display font-semibold">{formatBRL(expenses)}</p>
         </div>
       </div>
-      <img src="/logo.png" alt="" className="pointer-events-none absolute -right-6 -bottom-8 size-36 opacity-15 invert brightness-200" />
+      {BRAND.watermark && (
+        <img src={BRAND.watermark} alt="" className="pointer-events-none absolute -right-6 -bottom-8 size-36 opacity-15 invert brightness-200" />
+      )}
     </Card>
   )
 }
