@@ -49,7 +49,7 @@ export default function Clientes() {
         {!q && toCall.length > 0 && <ToCallSection items={toCall} onOpen={setDetailId} />}
 
         {!q && toCall.length > 0 && (
-          <h3 className="-mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted">Todas as clientes</h3>
+          <h3 className="mb-2 px-1 text-xs font-bold uppercase tracking-wider text-muted">Todas as clientes</h3>
         )}
 
         {list.length === 0 ? (
